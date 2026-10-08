@@ -1,0 +1,338 @@
+[
+ {
+  "name": "Louis Vuitton",
+  "file": "louis-vuitton.png",
+  "w": 399,
+  "h": 213
+ },
+ {
+  "name": "LVMH",
+  "file": "lvmh.png",
+  "w": 464,
+  "h": 167
+ },
+ {
+  "name": "Chanel",
+  "file": "chanel.png",
+  "w": 453,
+  "h": 81
+ },
+ {
+  "name": "Ruinart",
+  "file": "ruinart.png",
+  "w": 466,
+  "h": 131
+ },
+ {
+  "name": "Hennessy",
+  "file": "hennessy.png",
+  "w": 431,
+  "h": 220
+ },
+ {
+  "name": "Diptyque",
+  "file": "diptyque.png",
+  "w": 452,
+  "h": 215
+ },
+ {
+  "name": "Galeries Lafayette",
+  "file": "galeries-lafayette.png",
+  "w": 412,
+  "h": 220
+ },
+ {
+  "name": "Montblanc",
+  "file": "montblanc.png",
+  "w": 396,
+  "h": 220
+ },
+ {
+  "name": "Louis XIII",
+  "file": "louis-xiii.png",
+  "w": 431,
+  "h": 220
+ },
+ {
+  "name": "Hermès",
+  "file": "hermes.png",
+  "w": 375,
+  "h": 220
+ },
+ {
+  "name": "Dior",
+  "file": "dior.png",
+  "w": 470,
+  "h": 141
+ },
+ {
+  "name": "Guerlain",
+  "file": "guerlain.png",
+  "w": 485,
+  "h": 137
+ },
+ {
+  "name": "Cartier",
+  "file": "cartier.png",
+  "w": 463,
+  "h": 137
+ },
+ {
+  "name": "Breguet",
+  "file": "breguet.png",
+  "w": 345,
+  "h": 220
+ },
+ {
+  "name": "Yves Saint Laurent",
+  "file": "yves-saint-laurent.png",
+  "w": 110,
+  "h": 220
+ },
+ {
+  "name": "Givenchy",
+  "file": "givenchy.png",
+  "w": 524,
+  "h": 63
+ },
+ {
+  "name": "L'Oréal",
+  "file": "l-oreal.png",
+  "w": 464,
+  "h": 94
+ },
+ {
+  "name": "Chloé",
+  "file": "chloe.png",
+  "w": 443,
+  "h": 145
+ },
+ {
+  "name": "Christian Louboutin",
+  "file": "christian-louboutin.png",
+  "w": 281,
+  "h": 220
+ },
+ {
+  "name": "Aerin",
+  "file": "aerin.png",
+  "w": 481,
+  "h": 108
+ },
+ {
+  "name": "Chaumet",
+  "file": "chaumet.png",
+  "w": 519,
+  "h": 101
+ },
+ {
+  "name": "Estée Lauder",
+  "file": "estee-lauder.png",
+  "w": 501,
+  "h": 73
+ },
+ {
+  "name": "Lalique",
+  "file": "lalique.png",
+  "w": 462,
+  "h": 112
+ },
+ {
+  "name": "Dom Pérignon",
+  "file": "dom-perignon.png",
+  "w": 526,
+  "h": 202
+ },
+ {
+  "name": "Les Parfumables",
+  "file": "les-parfumables.png",
+  "w": 443,
+  "h": 180
+ },
+ {
+  "name": "Celine",
+  "file": "celine.png",
+  "w": 480,
+  "h": 95
+ },
+ {
+  "name": "Bonpoint",
+  "file": "bonpoint.png",
+  "w": 334,
+  "h": 220
+ },
+ {
+  "name": "Kenzo",
+  "file": "kenzo.png",
+  "w": 467,
+  "h": 122
+ },
+ {
+  "name": "Éditions de Parfums Frédéric Malle",
+  "file": "editions-de-parfums-frederic-malle.png",
+  "w": 537,
+  "h": 106
+ },
+ {
+  "name": "Shiseido",
+  "file": "shiseido.png",
+  "w": 527,
+  "h": 96
+ },
+ {
+  "name": "Dolce & Gabbana",
+  "file": "dolce-gabbana.png",
+  "w": 381,
+  "h": 192
+ },
+ {
+  "name": "Clarins",
+  "file": "clarins.png",
+  "w": 520,
+  "h": 111
+ },
+ {
+  "name": "Issey Miyake",
+  "file": "issey-miyake.png",
+  "w": 499,
+  "h": 69
+ },
+ {
+  "name": "Moët & Chandon",
+  "file": "moet-chandon.png",
+  "w": 485,
+  "h": 220
+ },
+ {
+  "name": "Messika",
+  "file": "messika.png",
+  "w": 483,
+  "h": 143
+ },
+ {
+  "name": "Caron",
+  "file": "caron.png",
+  "w": 466,
+  "h": 157
+ },
+ {
+  "name": "Bobbi Brown",
+  "file": "bobbi-brown.png",
+  "w": 514,
+  "h": 72
+ },
+ {
+  "name": "Narciso Rodriguez",
+  "file": "narciso-rodriguez.png",
+  "w": 500,
+  "h": 50
+ },
+ {
+  "name": "Sisley",
+  "file": "sisley.png",
+  "w": 464,
+  "h": 144
+ },
+ {
+  "name": "Rémy Martin",
+  "file": "remy-martin.png",
+  "w": 343,
+  "h": 220
+ },
+ {
+  "name": "Jo Malone London",
+  "file": "jo-malone-london.png",
+  "w": 510,
+  "h": 128
+ },
+ {
+  "name": "Tiffany & Co.",
+  "file": "tiffany-co.png",
+  "w": 506,
+  "h": 72
+ },
+ {
+  "name": "L'Artisan Parfumeur",
+  "file": "l-artisan-parfumeur.png",
+  "w": 497,
+  "h": 220
+ },
+ {
+  "name": "Prada",
+  "file": "prada.png",
+  "w": 325,
+  "h": 220
+ },
+ {
+  "name": "Kilian",
+  "file": "kilian.png",
+  "w": 453,
+  "h": 216
+ },
+ {
+  "name": "Marc Jacobs",
+  "file": "marc-jacobs.png",
+  "w": 519,
+  "h": 45
+ },
+ {
+  "name": "Burberry",
+  "file": "burberry.png",
+  "w": 502,
+  "h": 220
+ },
+ {
+  "name": "Puig",
+  "file": "puig.png",
+  "w": 482,
+  "h": 94
+ },
+ {
+  "name": "Miu Miu",
+  "file": "miu-miu.png",
+  "w": 449,
+  "h": 74
+ },
+ {
+  "name": "Tumi",
+  "file": "tumi.png",
+  "w": 484,
+  "h": 135
+ },
+ {
+  "name": "Penhaligon's",
+  "file": "penhaligon-s.png",
+  "w": 525,
+  "h": 98
+ },
+ {
+  "name": "Maison Francis Kurkdjian",
+  "file": "maison-francis-kurkdjian.png",
+  "w": 513,
+  "h": 130
+ },
+ {
+  "name": "Maison Psyché",
+  "file": "maison-psyche.png",
+  "w": 425,
+  "h": 220
+ },
+ {
+  "name": "Jacadi",
+  "file": "jacadi.png",
+  "w": 439,
+  "h": 190
+ },
+ {
+  "name": "Annick Goutal",
+  "file": "annick-goutal.png",
+  "w": 534,
+  "h": 107
+ },
+ {
+  "name": "Clinique",
+  "file": "clinique.png",
+  "w": 496,
+  "h": 147
+ }
+]
