@@ -62,6 +62,7 @@ def head(slug):
 <script>document.documentElement.classList.add('js')</script>
 <script src="{b}assets/vendor/gsap.min.js" defer></script>
 <script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
+{'<script src="assets/hero-gl.js" defer></script>' if slug == "" else ""}
 <script src="{b}assets/site.js" defer></script>
 </head>"""
 
@@ -180,6 +181,7 @@ def build_home():
     hero = f"""<section class="hero-wrap" data-hero-wrap aria-labelledby="hero-t">
   <div class="hero" data-hero>
     <div class="hero__leather" aria-hidden="true"></div>
+    <canvas class="hero__gl" aria-hidden="true"></canvas>
     <div class="hero__light" aria-hidden="true" data-light></div>
     <div class="hero__veil" aria-hidden="true" data-veil></div>
     <div class="hero__stage" data-stage>
@@ -221,10 +223,12 @@ def build_home():
       <h2 id="gestes-t" class="d2 split">{esc(LABEL['creation-d-objet-unique'])}</h2>
       <p class="lede">{esc(intro_sig)}</p>
     </div>
-    <div class="gestes__body">
-      <div class="gestes__media" aria-hidden="true">{''.join(media)}</div>
-      <div class="gestes__listwrap"><span class="gestes__line" aria-hidden="true"><span data-g-line></span></span><ul class="gestes__list">{''.join(items)}</ul></div>
-    </div>
+  </div>
+  <div class="gestes__body">
+    <div class="gestes__media" aria-hidden="true">{''.join(media)}</div>
+    <div class="gestes__listwrap"><span class="gestes__line" aria-hidden="true"><span data-g-line></span></span><ul class="gestes__list">{''.join(items)}</ul></div>
+  </div>
+  <div class="wrap">
     <p class="reals__more"><a class="link" href="creation-d-objet-unique/">{esc(LABEL['creation-d-objet-unique'])} <span aria-hidden="true">&rarr;</span></a></p>
   </div>
 </section>"""
@@ -246,7 +250,9 @@ def build_home():
       <h2 id="reals-t" class="split">Réalisations</h2>
       <div class="reals__tabs" role="group" aria-label="Choisir une rubrique">{tabs}</div>
     </div>
-    <div class="reals__grid" data-reals>{''.join(cells)}</div>
+  </div>
+  <div class="reals__grid" data-reals>{''.join(cells)}</div>
+  <div class="wrap">
     <p class="reals__more"><a class="link" data-reals-link href="{link(slug, default)}">Voir la page <span data-reals-label>{esc(LABEL[default])}</span> <span aria-hidden="true">&rarr;</span></a></p>
   </div>
 </section>"""
@@ -336,7 +342,7 @@ def build_rubric(slug):
   <div class="wrap"><div class="rh__intro" data-settle>{paras}</div></div>
 </section>
 <section class="sheet" aria-label="Réalisations">
-  <div class="wrap"><div class="sheet__grid">{''.join(cells)}</div></div>
+  <div class="sheet__grid">{''.join(cells)}</div>
 </section>
 {film}
 <a class="next3" href="{link(slug, NEXT[slug])}" data-open>
@@ -431,7 +437,7 @@ def main():
         build_rubric(s)
     build_contact()
     build_privacy()
-    for f in ("leather.jpg", "goldleaf.jpg", "logo-cobalt-creme.png"):
+    for f in ("leather.jpg", "leather-soft.jpg", "leather-height.png", "goldleaf.jpg", "logo-cobalt-creme.png"):
         A.file(f)
     n = A.copy()
     fonts = SITE / "assets/fonts"

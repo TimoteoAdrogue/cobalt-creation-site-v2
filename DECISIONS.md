@@ -54,3 +54,24 @@ Nothing was taken from V1 or invented.
 - Pages keep the live slugs; canonical tags point to www.cobaltcreation.com; every page is
   `noindex, nofollow` and robots.txt disallows everything until launch.
 - Light/dark: V2 is locked light and V3 locked dark, by brand choice rather than system setting.
+
+## Second pass (2026-10-10): motion and presentation
+- **Motion engine:** GSAP 3.12.5 + ScrollTrigger, self-hosted in `assets/vendor/` (free under the GSAP
+  standard licence). Used for pinning, scrubbing and the horizontal gallery; plain IntersectionObserver
+  for simple reveals, with a safety sweep so a fast scroll can never leave content hidden.
+- **V2 « Maison »:** full-screen banner (still the live slides, right to left, one advance every 3 s),
+  manifesto lit word by word, stacking métiers, pinned horizontal works gallery, book turning in 3D,
+  marquee that answers the scroll speed, mosaic wipes with photo parallax, next-rubric links,
+  cross-page view transitions where supported.
+- **V3 « Atelier »:** the hero is rendered live in WebGL2 (`assets/hero-gl.js`): procedural pebbled
+  leather lit per pixel at the screen's own resolution, the monogram pressed into it in four finishes,
+  a light that follows the pointer, a breathing camera, and a scroll story (the hide tilts back while
+  the agency's three sentences arrive, as in V1). Without WebGL2 or with reduced motion, the vector
+  SVG monogram is used instead. Measured 60 fps (median 16.7 ms, worst 16.8 ms) at 1440 x 900.
+- **Presentation of the photographs (V3):** the client's photos are mostly white studio shots; set as
+  small frames on a flat ink ground they read as stickers. They are now shown as full-bleed surfaces:
+  a full-height half-screen panel for the techniques, an edge-to-edge image wall for the works, edge-to-edge
+  contact sheets, captions laid over the photographs, a paper-toned viewer. The dark grounds carry a
+  quiet leather grain instead of a flat colour.
+- Band sentences in the V3 hero are cut from the live « Notre agence » text at their first comma,
+  ending with a full stop.

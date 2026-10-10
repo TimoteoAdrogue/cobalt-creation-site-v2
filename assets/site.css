@@ -176,7 +176,7 @@ button { font: inherit; color: inherit; }
 .more:hover span { transform: translateX(8px); }
 
 /* ---------- réalisations: pinned horizontal gallery ---------- */
-.hx { background: var(--mist); }
+.hx { background: var(--paper); border-top: 1px solid var(--line); }
 .hx__pin { position: relative; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; gap: clamp(24px, 4vh, 44px); padding-block: calc(var(--hd) + 12px) 32px; overflow: hidden; }
 .hx__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px 32px; }
 .hx__rubrics { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 26px; margin: 0; padding: 0; }
