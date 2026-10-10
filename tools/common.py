@@ -235,6 +235,24 @@ class Assets:
                 f'<img{c} src="{base}assets/media/{first["jpg"]}" srcset="{jpg}" sizes="{sizes}" '
                 f'width="{first["w"]}" height="{first["h"]}" alt="{esc(alt)}" {load} decoding="async"{pr}{attrs}></picture>')
 
+    def picture_wide(self, name, base, box_h="100vh", alt="", cls="", eager=False, priority=False):
+        """Full-width cover image. `sizes` tells the browser the real rendered width under
+        object-fit: cover (a panorama in a tall box renders far wider than the viewport)."""
+        m = ensure_wide(name)
+        files = m["files"]
+        sizes = f"max(100vw, calc({box_h} * {m['w'] / m['h']:.3f}))"
+        for f in files:
+            self.used.add(f["jpg"]); self.used.add(f["avif"])
+        avif = ", ".join(f"{base}assets/media/{f['avif']} {f['w']}w" for f in files)
+        jpg = ", ".join(f"{base}assets/media/{f['jpg']} {f['w']}w" for f in files)
+        first = files[0]
+        load = 'loading="eager"' if eager else 'loading="lazy"'
+        pr = ' fetchpriority="high"' if priority else ""
+        c = f' class="{cls}"' if cls else ""
+        return (f'<picture><source type="image/avif" srcset="{avif}" sizes="{sizes}">'
+                f'<img{c} src="{base}assets/media/{first["jpg"]}" srcset="{jpg}" sizes="{sizes}" '
+                f'width="{first["w"]}" height="{first["h"]}" alt="{esc(alt)}" {load} decoding="async"{pr}></picture>')
+
     def largest(self, name, base, cap=1600):
         files = [f for f in MEDIA_INDEX[name]["files"] if f["w"] <= cap] or MEDIA_INDEX[name]["files"][:1]
         f = files[-1]
@@ -263,3 +281,63 @@ def write(site, rel, text):
 def check_no_dashes(text, where):
     bad = [c for c in ("—",) if c in text]
     assert not bad, f"em-dash in {where}"
+
+
+# ---------- sharp full-width imagery ----------
+WIDE_PATH = DATA / "media-wide.json"
+WIDE = json.loads(WIDE_PATH.read_text()) if WIDE_PATH.exists() else {}
+WIDE_W = (1280, 1920, 2560)
+# The live home slide « Édition limitée - peinture » is a 2382 x 462 crop of the client's Lalique photo;
+# the full photograph is in their own works (Atelier parisien), so it stands in at full resolution.
+HOME_SWAP = {"53e2f6_bed69cc934fb4abb8b4152db4876ca6f~mv2.jpg": "53e2f6_2334ebd14cda46f59fbd7aff85acbb20~mv2.jpg"}
+
+
+def ensure_wide(name):
+    """Large derivatives for any source used full width or full height. Widths go up to 2560 px,
+    plus the widths a panorama needs to reach 1100 and 1800 px of height (capped at the original)."""
+    if name in WIDE and WIDE[name].get("v") == 2:
+        return WIDE[name]
+    from PIL import Image, ImageOps
+    Image.MAX_IMAGE_PIXELS = None
+    im = ImageOps.exif_transpose(Image.open(ROOT / "src-media" / name)).convert("RGB")
+    aspect = im.width / im.height
+    want = sorted({1280, 1920, 2560, round(1100 * aspect), round(1800 * aspect)})
+    files = []
+    for w in want:
+        w = min(w, im.width, 9000)
+        if w in [f["w"] for f in files]:
+            continue
+        h = round(im.height * w / im.width)
+        r = im.resize((w, h), Image.LANCZOS)
+        stem = name.split("~")[0].replace("53e2f6_", "")[:12]
+        base = MEDIA / f"{stem}-x{w}"
+        r.save(f"{base}.jpg", "JPEG", quality=82, optimize=True, progressive=True)
+        r.save(f"{base}.avif", "AVIF", quality=60, speed=6)
+        files.append({"w": w, "h": h, "jpg": f"{base.name}.jpg", "avif": f"{base.name}.avif"})
+    WIDE[name] = {"v": 2, "w": im.width, "h": im.height, "files": files}
+    WIDE_PATH.write_text(json.dumps(WIDE, indent=1))
+    return WIDE[name]
+
+
+def fits(name, tw, th, limit=0.9):
+    """True when the source covers tw x th CSS px without being stretched (scale at 1x <= limit)."""
+    m = MEDIA_INDEX[name]
+    return max(tw / m["w"], th / m["h"]) <= limit
+
+
+def sharp_slides(slug, tw, th, need):
+    """The page's live banner images that are sharp at tw x th, topped up with the page's own
+    high-resolution landscape photographs, in live order."""
+    out = []
+    for n in PAGES["pages"][slug]["banner"]:
+        n = HOME_SWAP.get(n, n) if slug == "" else n
+        if n not in out and fits(n, tw, th):
+            out.append(n)
+    pool = [w["media"] for s in ([slug] if slug in RUBRIC_COUNTS else RUBRICS) for w in works(s)]
+    for n in pool:
+        if len(out) >= need:
+            break
+        m = MEDIA_INDEX[n]
+        if n not in out and m["w"] >= 2000 and m["w"] / m["h"] >= 1.25 and fits(n, tw, th):
+            out.append(n)
+    return out[:need]

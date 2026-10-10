@@ -131,9 +131,9 @@ def hero(slug, title_html, sub_html, names=None):
     """Full-screen auto-sliding banner: the live slides, right to left, one advance every 3 s."""
     b = base(slug)
     slides, dots = [], []
-    banner = c.PAGES["pages"][slug]["banner"]
+    banner = c.sharp_slides(slug, 1440, 900, 3)   # live slides, unless too small for full screen
     for i, n in enumerate(banner):
-        pic = A.picture(n, b, "100vw", alt="", eager=i < 2, priority=i == 0, cls="sl__img")
+        pic = A.picture_wide(n, b, "100vh", alt="", eager=i < 2, priority=i == 0, cls="sl__img")
         name = f' data-name="{esc(names[i])}"' if names else ""
         slides.append(f'<div class="sl{" is-on" if i == 0 else ""}" role="group" aria-roledescription="diapositive" aria-label="{i + 1} sur {len(banner)}"{name}>{pic}</div>')
         dots.append(f'<button class="bn__dot" type="button" aria-label="Image {i + 1} sur {len(banner)}"><span></span></button>')
@@ -355,7 +355,7 @@ def build_rubric(slug):
     lead_words = " ".join(f'<span class="w">{esc(w)}</span>' for w in intro[0].split())
     rest = "".join(f"<p>{esc(p)}</p>" for p in intro[1:])
     nxt = NEXT[slug]
-    nimg = A.picture(c.PAGES["pages"][nxt]["banner"][0], b, "100vw", alt="", cls="next__img")
+    nimg = A.picture_wide(c.sharp_slides(nxt, 1440, 720, 1)[0], b, "78vh", alt="", cls="next__img")
     main = f"""{hero(slug, title, "")}
 <section class="intro">
   <div class="wrap intro__in">

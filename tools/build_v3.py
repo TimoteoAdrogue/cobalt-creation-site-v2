@@ -310,8 +310,8 @@ def build_rubric(slug):
     title = f'<span class="split">{esc(h[0].capitalize())}</span>'
     if len(h) > 1:
         title += f"<em>{esc(h[1].capitalize())}</em>"
-    banner = c.PAGES["pages"][slug]["banner"][0]
-    fig = A.picture(banner, b, "100vw", alt="", eager=True, priority=True)
+    banner = c.sharp_slides(slug, 1440, 620, 1)[0]
+    fig = A.picture_wide(banner, b, "620px", alt="", eager=True, priority=True)
     paras = "".join(f"<p>{esc(p)}</p>" for p in c.intro(slug))
     cells = []
     for i, w in enumerate(items):
@@ -346,7 +346,7 @@ def build_rubric(slug):
 </section>
 {film}
 <a class="next3" href="{link(slug, NEXT[slug])}" data-open>
-  <span class="next3__media" aria-hidden="true">{A.picture(c.PAGES["pages"][NEXT[slug]]["banner"][0], b, "100vw", alt="", cls="next3__img")}</span>
+  <span class="next3__media" aria-hidden="true">{A.picture_wide(c.sharp_slides(NEXT[slug], 1440, 720, 1)[0], b, "80vh", alt="", cls="next3__img")}</span>
   <span class="next3__k">Rubrique suivante</span>
   <span class="next3__t">{esc(LABEL[NEXT[slug]])}</span>
 </a>

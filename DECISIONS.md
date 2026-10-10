@@ -75,3 +75,9 @@ Nothing was taken from V1 or invented.
   quiet leather grain instead of a flat colour.
 - Band sentences in the V3 hero are cut from the live « Notre agence » text at their first comma,
   ending with a full stop.
+- **Image sharpness:** five live banner images are small panoramic crops (as low as 1711 x 462). Full screen,
+  they would be stretched up to 3.9x on a retina display. Each full-width slot now uses a live banner image
+  only when it covers the box without stretching; otherwise the page's own high-resolution landscape
+  photograph takes its place (the home « Édition limitée - peinture » slide shows the full 3056 px Lalique
+  photograph it was cropped from). Panoramas get derivatives tall enough for a full-height hero, and `sizes`
+  states their real rendered width under `object-fit: cover`, so browsers fetch a sharp file.
