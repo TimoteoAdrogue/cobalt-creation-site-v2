@@ -15,6 +15,8 @@ A = c.Assets(SITE)
 TITLES = {k: c.PAGES["pages"][k]["title"] for k in c.PAGES["pages"]}
 DESCS = {k: c.PAGES["pages"][k]["description"] for k in c.PAGES["pages"]}
 LABEL = dict(c.NAV)
+NEXT = {"creation-d-objet-unique": "ateliers-de-personnalisation", "ateliers-de-personnalisation": "design-graphique-design-papier",
+        "design-graphique-design-papier": "coffrets-packaging", "coffrets-packaging": "creation-d-objet-unique"}
 FINISHES = [("foil", "Marquage à chaud"), ("gravure", "Gravure"), ("emboss", "Embossage"), ("leaf", "Feuille d’or")]
 
 
@@ -58,6 +60,8 @@ def head(slug):
 <link rel="preload" href="{b}assets/fonts/bodonimoda.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{b}assets/site.css">
 <script>document.documentElement.classList.add('js')</script>
+<script src="{b}assets/vendor/gsap.min.js" defer></script>
+<script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{b}assets/site.js" defer></script>
 </head>"""
 
@@ -142,32 +146,59 @@ def caption(w):
     return f'<figcaption><span class="cap__t">{esc(lines[0])}</span>{f"<span class=cap__s>{esc(sub)}</span>" if sub else ""}</figcaption>'
 
 
+MONO_SVG = """<svg class="mono__svg" viewBox="0 0 1200 420" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="g-foil" gradientUnits="userSpaceOnUse" x1="-600" y1="0" x2="1800" y2="260">
+      <stop offset="0" stop-color="#6f4f28"/><stop offset=".14" stop-color="#b88d58"/><stop offset=".24" stop-color="#e9cf9d"/>
+      <stop offset=".3" stop-color="#fff3d6"/><stop offset=".38" stop-color="#d6b383"/><stop offset=".5" stop-color="#9a7442"/>
+      <stop offset=".62" stop-color="#c9a26c"/><stop offset=".72" stop-color="#f3dfb6"/><stop offset=".84" stop-color="#b38a55"/><stop offset="1" stop-color="#7d5a2f"/>
+    </linearGradient>
+    <pattern id="g-hatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(38)"><rect width="7" height="7" fill="#022d42"/><rect width="3.5" height="7" fill="#011824"/></pattern>
+    <linearGradient id="g-emboss" x1="0" y1="0" x2=".35" y2="1"><stop offset="0" stop-color="#12698e"/><stop offset=".36" stop-color="#075275"/><stop offset=".7" stop-color="#034360"/><stop offset="1" stop-color="#023650"/></linearGradient>
+    <pattern id="g-leaf" patternUnits="userSpaceOnUse" width="560" height="560"><image href="assets/media/goldleaf.jpg" width="560" height="560" preserveAspectRatio="none"/></pattern>
+    <filter id="f-soft" x="-5%" y="-10%" width="110%" height="120%"><feGaussianBlur stdDeviation="2.6"/></filter>
+    <filter id="f-softer" x="-5%" y="-10%" width="110%" height="120%"><feGaussianBlur stdDeviation="4.2"/></filter>
+  </defs>
+  <g class="mono__g">
+    <text class="mono__l mono__shadow" x="600" y="320" text-anchor="middle"></text>
+    <text class="mono__l mono__hi" x="600" y="320" text-anchor="middle"></text>
+    <text class="mono__l mono__face" x="600" y="320" text-anchor="middle"></text>
+  </g>
+</svg>"""
+
+
 def build_home():
     slug, b = "", ""
     h = c.home()
-    # hero
+    ag = h["agence"]
+    # The three sentences that arrive while the hero is pinned, taken from the live « Notre agence » text.
+    band_texts = [ag[0], ag[1].split(",")[0] + ".", ag[2].split(",")[0] + "."]
+    bands = "".join(f'<p class="band" data-band="{i}">{esc(t)}</p>' for i, t in enumerate(band_texts))
     finish_btns = "".join(
         f'<button type="button" data-finish="{k}" aria-pressed="{"true" if k == "foil" else "false"}">{esc(label)}</button>' for k, label in FINISHES)
-    hero = f"""<section class="hero" data-hero aria-labelledby="hero-t">
-  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><filter id="torn" x="-4%" y="-4%" width="108%" height="108%"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
-  <div class="hero__leather" aria-hidden="true"></div>
-  <div class="hero__light" aria-hidden="true" data-light></div>
-  <div class="hero__stage">
-    <div class="mono is-ghost" data-mono data-finish="foil">
-      <span class="mono__l mono__shadow" aria-hidden="true"></span>
-      <span class="mono__l mono__hi" aria-hidden="true"></span>
-      <span class="mono__l mono__face" aria-hidden="true"></span>
-      <input class="mono__input" id="initiales" name="initiales" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="initiales-aide">
+    A.file("goldleaf.jpg")
+    hero = f"""<section class="hero-wrap" data-hero-wrap aria-labelledby="hero-t">
+  <div class="hero" data-hero>
+    <div class="hero__leather" aria-hidden="true"></div>
+    <div class="hero__light" aria-hidden="true" data-light></div>
+    <div class="hero__veil" aria-hidden="true" data-veil></div>
+    <div class="hero__stage" data-stage>
+      <div class="mono" data-mono data-finish="foil">
+        {MONO_SVG}
+        <input class="mono__input" id="initiales" name="initiales" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="initiales-aide">
+      </div>
+      <div class="hero__controls" data-controls>
+        <label class="mono__field" for="initiales"><span class="mono__label">Écrivez vos initiales</span><span class="mono__rule" aria-hidden="true"></span><span class="sr-only" id="initiales-aide">Trois lettres au plus. Le monogramme se met à jour pendant la saisie.</span></label>
+        <div class="finish" role="group" aria-label="Finition du monogramme">{finish_btns}</div>
+      </div>
     </div>
-    <label class="mono__field" for="initiales"><span class="mono__label">Écrivez vos initiales</span><span class="mono__rule" aria-hidden="true"></span><span class="sr-only" id="initiales-aide">Trois lettres au plus. Le monogramme se met à jour pendant la saisie.</span></label>
-    <div class="finish" role="group" aria-label="Finition du monogramme">{finish_btns}</div>
-  </div>
-  <div class="hero__foot">
-    <div class="hero__copy" data-settle>
-      <h1 id="hero-t">Ateliers de personnalisation sur-mesure</h1>
-      <p>{esc(h['agence'][0])}</p>
+    <div class="bands" data-bands>{bands}</div>
+    <div class="hero__foot" data-hero-foot>
+      <div class="hero__copy">
+        <h1 id="hero-t">Ateliers de personnalisation sur-mesure</h1>
+      </div>
+      <a class="link" href="contact-feedback/">Nous contacter <span aria-hidden="true">&rarr;</span></a>
     </div>
-    <a class="link" href="contact-feedback/" data-settle>Nous contacter <span aria-hidden="true">&rarr;</span></a>
   </div>
 </section>"""
 
@@ -187,12 +218,12 @@ def build_home():
     gestes = f"""<section class="sec gestes" aria-labelledby="gestes-t">
   <div class="wrap">
     <div class="sec__head" data-settle>
-      <h2 id="gestes-t" class="d2">{esc(LABEL['creation-d-objet-unique'])}</h2>
+      <h2 id="gestes-t" class="d2 split">{esc(LABEL['creation-d-objet-unique'])}</h2>
       <p class="lede">{esc(intro_sig)}</p>
     </div>
     <div class="gestes__body">
       <div class="gestes__media" aria-hidden="true">{''.join(media)}</div>
-      <ul class="gestes__list">{''.join(items)}</ul>
+      <div class="gestes__listwrap"><span class="gestes__line" aria-hidden="true"><span data-g-line></span></span><ul class="gestes__list">{''.join(items)}</ul></div>
     </div>
     <p class="reals__more"><a class="link" href="creation-d-objet-unique/">{esc(LABEL['creation-d-objet-unique'])} <span aria-hidden="true">&rarr;</span></a></p>
   </div>
@@ -209,10 +240,10 @@ def build_home():
             hidden = "" if s == default else " hidden"
             pic = A.picture(w["media"], b, "(max-width: 767px) 46vw, 30vw", alt=c.work_alt(w) or f"Réalisation {n}")
             cells.append(f'<figure class="rl" data-p="{s}"{hidden}><a href="{link(slug, s)}#piece-{c.works(s).index(w) + 1}" data-view=\'{esc(item_data(w, b, n))}\'>{pic}</a>{caption(w)}</figure>')
-    reals = f"""<section class="sec sec--deep reals" aria-labelledby="reals-t">
+    reals = f"""<section class="sec sec--deep reals" data-open aria-labelledby="reals-t">
   <div class="wrap">
     <div class="reals__head" data-settle>
-      <h2 id="reals-t">Réalisations</h2>
+      <h2 id="reals-t" class="split">Réalisations</h2>
       <div class="reals__tabs" role="group" aria-label="Choisir une rubrique">{tabs}</div>
     </div>
     <div class="reals__grid" data-reals>{''.join(cells)}</div>
@@ -230,18 +261,18 @@ def build_home():
     logos = "".join(logo_items)
     maisons = f"""<section class="sec" aria-labelledby="maisons-t">
   <div class="wrap">
-    <div class="sec__head" data-settle><h2 id="maisons-t" class="d2">{esc(h['trust_title'])}</h2></div>
-    <ul class="wall" data-settle>{logos}</ul>
+    <div class="sec__head"><h2 id="maisons-t" class="d2 split">{esc(h['trust_title'])}</h2></div>
+    <ul class="wall" data-wall>{logos}</ul>
   </div>
 </section>"""
 
     for f in ("book-cover-600.jpg", "book-cover-600.avif", "book-cover-1200.jpg", "book-cover-1200.avif", "cobalt-creation-book.pdf"):
         A.file(f)
-    book = f"""<section class="sec sec--deep" aria-labelledby="book-t">
+    book = f"""<section class="sec sec--deep" aria-labelledby="book-t" data-open data-book3-sec>
   <div class="wrap book3">
-    <div class="book3__cover" data-tilt data-settle><picture><source type="image/avif" srcset="assets/media/book-cover-600.avif 600w, assets/media/book-cover-1200.avif 1200w" sizes="(max-width: 900px) 80vw, 460px"><img src="assets/media/book-cover-600.jpg" srcset="assets/media/book-cover-600.jpg 600w, assets/media/book-cover-1200.jpg 1200w" sizes="(max-width: 900px) 80vw, 460px" width="600" height="600" alt="Couverture du book de Cobalt Création" loading="lazy" decoding="async"></picture></div>
+    <div class="book3__cover" data-tilt><div class="book3__obj" data-book3><picture><source type="image/avif" srcset="assets/media/book-cover-600.avif 600w, assets/media/book-cover-1200.avif 1200w" sizes="(max-width: 900px) 80vw, 460px"><img src="assets/media/book-cover-600.jpg" srcset="assets/media/book-cover-600.jpg 600w, assets/media/book-cover-1200.jpg 1200w" sizes="(max-width: 900px) 80vw, 460px" width="600" height="600" alt="Couverture du book de Cobalt Création" loading="lazy" decoding="async"></picture><span class="book3__edge" aria-hidden="true"></span></div></div>
     <div data-settle>
-      <h2 id="book-t" class="d2" style="margin-bottom:32px">{esc(h['book_title'])}</h2>
+      <h2 id="book-t" class="d2 split" style="margin-bottom:32px">{esc(h['book_title'])}</h2>
       <a class="btn3" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf">{esc(h['book_link'])}</a>
       <span class="book3__meta">PDF, {c.BOOK_SIZE}</span>
     </div>
@@ -256,8 +287,8 @@ def build_home():
     crew_cols = "".join(cols)
     crew = f"""<section class="sec" aria-labelledby="crew-t">
   <div class="wrap">
-    <div class="sec__head" data-settle><h2 id="crew-t" class="d2">L’équipe</h2></div>
-    <div class="crew" data-settle>{crew_cols}</div>
+    <div class="sec__head"><h2 id="crew-t" class="d2 split">L’équipe</h2></div>
+    <div class="crew" data-crew>{crew_cols}</div>
     <p class="reals__more"><a class="link" href="contact-feedback/">Nous contacter <span aria-hidden="true">&rarr;</span></a></p>
   </div>
 </section>"""
@@ -270,7 +301,7 @@ def build_rubric(slug):
     items = c.works(slug)
     assert len(items) == c.RUBRIC_COUNTS[slug]
     h = c.heading(slug)
-    title = f"<span>{esc(h[0].capitalize())}</span>"
+    title = f'<span class="split">{esc(h[0].capitalize())}</span>'
     if len(h) > 1:
         title += f"<em>{esc(h[1].capitalize())}</em>"
     banner = c.PAGES["pages"][slug]["banner"][0]
@@ -299,7 +330,7 @@ def build_rubric(slug):
   </div>
 </section>"""
     main = f"""<section class="rh">
-  <figure class="rh__fig">{fig}
+  <figure class="rh__fig" data-rh>{fig}
     <figcaption class="rh__title"><div class="wrap"><h1 class="d1">{title}</h1></div></figcaption>
   </figure>
   <div class="wrap"><div class="rh__intro" data-settle>{paras}</div></div>
@@ -308,9 +339,14 @@ def build_rubric(slug):
   <div class="wrap"><div class="sheet__grid">{''.join(cells)}</div></div>
 </section>
 {film}
+<a class="next3" href="{link(slug, NEXT[slug])}" data-open>
+  <span class="next3__media" aria-hidden="true">{A.picture(c.PAGES["pages"][NEXT[slug]]["banner"][0], b, "100vw", alt="", cls="next3__img")}</span>
+  <span class="next3__k">Rubrique suivante</span>
+  <span class="next3__t">{esc(LABEL[NEXT[slug]])}</span>
+</a>
 <section class="sec sec--deep cta3">
   <div class="wrap" data-settle>
-    <h2 class="d2">Nous contacter</h2>
+    <h2 class="d2 split">Nous contacter</h2>
     <div class="cta3__ways"><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></div>
     <a class="link" href="{link(slug, 'contact-feedback')}">Formulaire de contact <span aria-hidden="true">&rarr;</span></a>
   </div>
@@ -328,7 +364,7 @@ def build_contact():
         gs.append(f'<div class="team3__g" data-settle><h2>{esc(g["name"])}</h2><div class="team3__ppl">{ppl}</div></div>')
     main = f"""<section class="ct3" aria-labelledby="ct-t">
   <div class="wrap">
-    <h1 id="ct-t" class="d1" data-settle>Nous contacter</h1>
+    <h1 id="ct-t" class="d1 split">Nous contacter</h1>
     <div class="ct3__grid">
       <dl class="ways" data-settle>
         <div><dt>Téléphone</dt><dd><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a></dd></div>
@@ -395,7 +431,7 @@ def main():
         build_rubric(s)
     build_contact()
     build_privacy()
-    for f in ("leather.png", "goldleaf.jpg", "logo-cobalt-creme.png"):
+    for f in ("leather.jpg", "goldleaf.jpg", "logo-cobalt-creme.png"):
         A.file(f)
     n = A.copy()
     fonts = SITE / "assets/fonts"
@@ -404,6 +440,10 @@ def main():
                      ("bodonimoda-italic.woff2", "bodonimoda-italic.woff2"), ("OFL-geist.txt", "OFL-geist.txt"),
                      ("OFL-bodonimoda.txt", "OFL-bodonimoda.txt")):
         shutil.copy2(c.MEDIA / "fonts" / src, fonts / dst)
+    vendor = SITE / "assets/vendor"
+    vendor.mkdir(parents=True, exist_ok=True)
+    for f in ("gsap.min.js", "ScrollTrigger.min.js"):
+        shutil.copy2(c.MEDIA / "vendor" / f, vendor / f)
     c.write(SITE, "robots.txt", "User-agent: *\nDisallow: /\n")
     (SITE / ".nojekyll").write_text("")
     print("v3 built,", n, "media files")

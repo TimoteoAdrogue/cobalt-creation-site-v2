@@ -42,22 +42,22 @@ def shade(h, light=(-0.6, -0.7, 0.9), strength=6.0):
     return (nx * l[0] + ny * l[1] + nz * l[2]) / nrm
 
 
-def leather(size=512):
+def leather(size=1024):
     d1, d2, _ = worley(size, 26, 11)
     crease = np.clip((d2 - d1) * 2.2, 0, 1)            # 0 in the grooves between pebbles
     pebble = np.sqrt(crease) * 0.9 + fine_noise(size, 3, 2) * 0.08 + fine_noise(size, 5, 8) * 0.12
     s = shade(pebble, strength=5.0)
     s = (s - s.mean()) / (s.std() + 1e-6)
     img = np.clip(128 + s * 18, 0, 255).astype(np.uint8)    # mid-grey centred: neutral under soft-light
-    Image.fromarray(img).convert("L").save(OUT / "leather.png", optimize=True)
+    Image.fromarray(img).convert("L").save(OUT / "leather.jpg", quality=84, optimize=True)
 
 
-def goldleaf(size=512):
+def goldleaf(size=1024):
     d1, d2, idx = worley(size, 4, 23)
     rng = np.random.default_rng(5)
     tone = rng.uniform(0.92, 1.06, idx.max() + 1)[idx]           # each sheet sits at its own angle
     tear = np.exp(-((d2 - d1) / 0.035) ** 2)                      # thin seams where sheets overlap
-    crumple = fine_noise(size, 9, 32) * 0.45 + fine_noise(size, 13, 12) * 0.35 + fine_noise(size, 17, 4) * 0.2
+    crumple = fine_noise(size, 9, 64) * 0.45 + fine_noise(size, 13, 24) * 0.35 + fine_noise(size, 17, 6) * 0.2
     s = shade(crumple, light=(-0.5, -0.8, 0.6), strength=26.0)
     spec = np.clip(s, 0, 1) ** 6                                   # metallic glints on the crumples
     lum = np.clip(tone * (0.46 + 0.46 * s + 0.7 * spec) - tear * 0.3, 0, 1.3)

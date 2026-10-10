@@ -20,14 +20,18 @@
 <link rel="preload" href="../assets/fonts/jost.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../assets/site.css">
 <script>document.documentElement.classList.add('js')</script>
+<script src="../assets/vendor/gsap.min.js" defer></script>
+<script src="../assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="../assets/site.js" defer></script>
 </head>
 <body class="p-contact">
 <a class="skip" href="#contenu">Aller au contenu</a>
 <header class="hd" data-header>
-  <div class="hd__brand"><a href="../" aria-label="Cobalt Création, accueil"><img src="../assets/media/logo-cobalt.png" width="653" height="337" alt="Cobalt Création"></a></div>
+  <a class="hd__logo" href="../" aria-label="Cobalt Création, accueil">
+    <img class="hd__logo-ink" src="../assets/media/logo-cobalt.png" width="653" height="337" alt="Cobalt Création">
+    <img class="hd__logo-cream" src="../assets/media/logo-cobalt-creme.png" width="653" height="337" alt="" aria-hidden="true">
+  </a>
   <nav class="hd__nav" aria-label="Navigation principale">
-    <a class="hd__mini" href="../" aria-label="Cobalt Création, accueil"><img src="../assets/media/logo-cobalt.png" width="653" height="337" alt=""></a>
     <ul class="hd__list">
 <li><a class="" href="../">Accueil</a></li>
 <li><a class="" href="../creation-d-objet-unique/">Nos ateliers signatures</a></li>
@@ -36,8 +40,8 @@
 <li><a class="" href="../coffrets-packaging/">Notre atelier parisien</a></li>
 <li><a class="" href="../contact-feedback/" aria-current="page">Contact</a></li>
     </ul>
-    <button class="hd__menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hd__burger" aria-hidden="true"></span><span data-menu-label>Menu</span></button>
   </nav>
+  <button class="hd__menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hd__burger" aria-hidden="true"></span><span data-menu-label>Menu</span></button>
 </header>
 <div class="menu" id="menu" data-menu>
   <ul>
@@ -55,30 +59,30 @@
 <main id="contenu">
 <section class="ct-top" aria-labelledby="ct-t">
   <div class="wrap">
-    <h1 id="ct-t" class="t-up h-page">Nous contacter</h1>
+    <h1 id="ct-t" class="ct-title"><span class="split">Nous contacter</span></h1>
     <div class="ct-grid">
-      <dl class="ct-ways">
+      <dl class="ct-ways" data-reveal>
         <div><dt>Téléphone</dt><dd><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></dd></div>
         <div><dt>Email</dt><dd><a href="mailto:contact@cobaltcreation.com">contact@cobaltcreation.com</a></dd></div>
         <div><dt>Instagram</dt><dd><a href="https://www.instagram.com/cobaltcreation/" rel="noopener" target="_blank">@cobaltcreation</a></dd></div>
         <div><dt>Adresse</dt><dd>35, Boulevard Berthier - 75017 Paris</dd></div>
       </dl>
-      <form class="form" data-mailto="contact@cobaltcreation.com" novalidate>
-        <div class="field"><label for="f-nom">Nom</label><input id="f-nom" name="nom" autocomplete="family-name"><p class="field__err" id="e-nom" aria-live="polite"></p></div>
-        <div class="field"><label for="f-prenom">Prénom</label><input id="f-prenom" name="prenom" autocomplete="given-name"><p class="field__err" id="e-prenom" aria-live="polite"></p></div>
-        <div class="field field--full"><label for="f-email">Email *</label><input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="e-email"><p class="field__err" id="e-email" aria-live="polite"></p></div>
-        <div class="field field--full"><label for="f-msg">Message *</label><textarea id="f-msg" name="message" required aria-describedby="e-msg"></textarea><p class="field__err" id="e-msg" aria-live="polite"></p></div>
+      <form class="form" data-mailto="contact@cobaltcreation.com" novalidate data-reveal>
+        <div class="field"><label for="f-nom">Nom</label><input id="f-nom" name="nom" autocomplete="family-name"><p class="field__err" aria-live="polite"></p></div>
+        <div class="field"><label for="f-prenom">Prénom</label><input id="f-prenom" name="prenom" autocomplete="given-name"><p class="field__err" aria-live="polite"></p></div>
+        <div class="field field--full"><label for="f-email">Email *</label><input id="f-email" name="email" type="email" autocomplete="email" required><p class="field__err" aria-live="polite"></p></div>
+        <div class="field field--full"><label for="f-msg">Message *</label><textarea id="f-msg" name="message" required></textarea><p class="field__err" aria-live="polite"></p></div>
         <div class="form__foot"><button class="btn" type="submit">Envoyer</button><p class="form__note">En cliquant sur Envoyer, votre messagerie s’ouvre avec votre message prêt à partir vers contact@cobaltcreation.com.</p></div>
       </form>
     </div>
   </div>
 </section>
 <section class="team" aria-label="L’équipe">
-  <div class="wrap"><div class="team__group" data-reveal><h2 class="t-up">DIRECTION</h2><div class="team__people"><div class="person"><p class="person__n">Aurélie de Dion</p><p class="person__r">Fondatrice - Directrice de création</p><a href="mailto:adedion@cobaltcreation.com">adedion@cobaltcreation.com</a><a href="tel:+33681972685">+33 (0) 6 81 97 26 85</a></div><div class="person"><p class="person__n">Célia Lannes</p><p class="person__r">Directrice exécutive &amp; Cheffe de projet senior</p><a href="mailto:clannes@cobaltcreation.com">clannes@cobaltcreation.com</a><a href="tel:+33615487459">+33 (0) 6 15 48 74 59</a></div></div></div><div class="team__group" data-reveal><h2 class="t-up">CHEFS DE PROJETS</h2><div class="team__people"><div class="person"><p class="person__n">Agnès Maunoury</p><p class="person__r">Cheffe de Projets</p><a href="mailto:amaunoury@cobaltcreation.com">amaunoury@cobaltcreation.com</a><a href="tel:+33789714620">+33 (0) 7 89 71 46 20</a></div><div class="person"><p class="person__n">Victoire Vidal</p><p class="person__r">Cheffe de Projets</p><a href="mailto:vvidal@cobaltcreation.com">vvidal@cobaltcreation.com</a><a href="tel:+33788795196">+33 (0) 7 88 79 51 96</a></div></div></div><div class="team__group" data-reveal><h2 class="t-up">ANIMATIONS RETAIL</h2><div class="team__people"><div class="person"><p class="person__n">Stéphane Lemire</p><p class="person__r">Responsable Animation Retail / Développement Stratégique</p><a href="mailto:slemire@cobaltcreation.com">slemire@cobaltcreation.com</a><a href="tel:+33683379706">+ (33) 6 83 37 97 06</a></div><div class="person"><p class="person__n">Juliette Leroux</p><p class="person__r">Cheffe de Projets Retail</p><a href="mailto:jderoux@cobaltcreation.com">jderoux@cobaltcreation.com</a><a href="tel:+33686467431">+ (33) 6 86 46 74 31</a></div><div class="person"><p class="person__n">Mégane Vinson</p><p class="person__r">Responsable des formations</p><a href="mailto:formation@cobaltcreation.com">formation@cobaltcreation.com</a></div></div></div><div class="team__group" data-reveal><h2 class="t-up">DIRECTION ARTISTIQUE &amp; GRAPHISME</h2><div class="team__people"><div class="person"><p class="person__n">Yui Matano</p><p class="person__r">Directrice artistique - Responsable du studio graphique</p><a href="mailto:ymatano@cobaltcreation.com">ymatano@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div><div class="person"><p class="person__n">Manon Solanet</p><p class="person__r">Directrice artistique</p><a href="mailto:msolanet@cobaltcreation.com">msolanet@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div><div class="person"><p class="person__n">Ingrid Fleurant</p><p class="person__r">Graphiste senior</p><a href="mailto:ifleurant@cobaltcreation.com">ifleurant@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div><div class="person"><p class="person__n">Manon Leemput</p><p class="person__r">Designer Graphique Junior</p><a href="mailto:mleemput@cobaltcreation.com">mleemput@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div></div></div><div class="team__group" data-reveal><h2 class="t-up">ADMINISTRATION &amp; GESTION</h2><div class="team__people"><div class="person"><p class="person__n">Stéphanie Baresse</p><p class="person__r">Assistante de gestion et d’administration</p><a href="mailto:sbaresse@cobaltcreation.com">sbaresse@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div></div></div></div>
+  <div class="wrap"><div class="team__group"><h2 class="t-up" data-reveal>DIRECTION</h2><div class="team__people"><div class="person" data-reveal><p class="person__n">Aurélie de Dion</p><p class="person__r">Fondatrice - Directrice de création</p><a href="mailto:adedion@cobaltcreation.com">adedion@cobaltcreation.com</a><a href="tel:+33681972685">+33 (0) 6 81 97 26 85</a></div><div class="person" data-reveal><p class="person__n">Célia Lannes</p><p class="person__r">Directrice exécutive &amp; Cheffe de projet senior</p><a href="mailto:clannes@cobaltcreation.com">clannes@cobaltcreation.com</a><a href="tel:+33615487459">+33 (0) 6 15 48 74 59</a></div></div></div><div class="team__group"><h2 class="t-up" data-reveal>CHEFS DE PROJETS</h2><div class="team__people"><div class="person" data-reveal><p class="person__n">Agnès Maunoury</p><p class="person__r">Cheffe de Projets</p><a href="mailto:amaunoury@cobaltcreation.com">amaunoury@cobaltcreation.com</a><a href="tel:+33789714620">+33 (0) 7 89 71 46 20</a></div><div class="person" data-reveal><p class="person__n">Victoire Vidal</p><p class="person__r">Cheffe de Projets</p><a href="mailto:vvidal@cobaltcreation.com">vvidal@cobaltcreation.com</a><a href="tel:+33788795196">+33 (0) 7 88 79 51 96</a></div></div></div><div class="team__group"><h2 class="t-up" data-reveal>ANIMATIONS RETAIL</h2><div class="team__people"><div class="person" data-reveal><p class="person__n">Stéphane Lemire</p><p class="person__r">Responsable Animation Retail / Développement Stratégique</p><a href="mailto:slemire@cobaltcreation.com">slemire@cobaltcreation.com</a><a href="tel:+33683379706">+ (33) 6 83 37 97 06</a></div><div class="person" data-reveal><p class="person__n">Juliette Leroux</p><p class="person__r">Cheffe de Projets Retail</p><a href="mailto:jderoux@cobaltcreation.com">jderoux@cobaltcreation.com</a><a href="tel:+33686467431">+ (33) 6 86 46 74 31</a></div><div class="person" data-reveal><p class="person__n">Mégane Vinson</p><p class="person__r">Responsable des formations</p><a href="mailto:formation@cobaltcreation.com">formation@cobaltcreation.com</a></div></div></div><div class="team__group"><h2 class="t-up" data-reveal>DIRECTION ARTISTIQUE &amp; GRAPHISME</h2><div class="team__people"><div class="person" data-reveal><p class="person__n">Yui Matano</p><p class="person__r">Directrice artistique - Responsable du studio graphique</p><a href="mailto:ymatano@cobaltcreation.com">ymatano@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div><div class="person" data-reveal><p class="person__n">Manon Solanet</p><p class="person__r">Directrice artistique</p><a href="mailto:msolanet@cobaltcreation.com">msolanet@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div><div class="person" data-reveal><p class="person__n">Ingrid Fleurant</p><p class="person__r">Graphiste senior</p><a href="mailto:ifleurant@cobaltcreation.com">ifleurant@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div><div class="person" data-reveal><p class="person__n">Manon Leemput</p><p class="person__r">Designer Graphique Junior</p><a href="mailto:mleemput@cobaltcreation.com">mleemput@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div></div></div><div class="team__group"><h2 class="t-up" data-reveal>ADMINISTRATION &amp; GESTION</h2><div class="team__people"><div class="person" data-reveal><p class="person__n">Stéphanie Baresse</p><p class="person__r">Assistante de gestion et d’administration</p><a href="mailto:sbaresse@cobaltcreation.com">sbaresse@cobaltcreation.com</a><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></div></div></div></div>
 </section>
 <section class="map" aria-label="Plan d’accès">
   <div class="wrap">
-    <div class="map__frame" data-map="https://www.google.com/maps?q=35+Boulevard+Berthier,+75017+Paris&output=embed">
+    <div class="map__frame" data-map="https://www.google.com/maps?q=35+Boulevard+Berthier,+75017+Paris&output=embed" data-reveal>
       <div class="map__inner">
         <p class="map__addr">Agence Cobalt Création<br>35, Boulevard Berthier - 75017 Paris</p>
         <div class="map__actions"><button class="btn btn--ghost" type="button" data-map-load>Afficher la carte</button><a class="btn btn--ghost" href="https://www.google.com/maps/search/?api=1&query=35+Boulevard+Berthier+75017+Paris" rel="noopener" target="_blank">Ouvrir dans Google Maps</a></div>
@@ -89,11 +93,13 @@
 </section>
 </main>
 <footer class="ft">
-  <div class="wrap">
+  <div class="wrap ft__in">
     <img src="../assets/media/logo-cobalt.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
-    <p class="ft__name">Agence Cobalt Création</p>
-    <p class="ft__addr"><span>35, Boulevard Berthier - 75017 Paris</span><span class="ft__sep"> / </span><span><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></span><span class="ft__sep"> / </span><span><a href="mailto:contact@cobaltcreation.com">contact@cobaltcreation.com</a></span></p>
-    <p>Horaires d’ouverture : 9h30 - 18h30</p>
+    <div>
+      <p class="ft__name">Agence Cobalt Création</p>
+      <p class="ft__addr"><span>35, Boulevard Berthier - 75017 Paris</span><span class="ft__sep"> / </span><span><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></span><span class="ft__sep"> / </span><span><a href="mailto:contact@cobaltcreation.com">contact@cobaltcreation.com</a></span></p>
+      <p>Horaires d’ouverture : 9h30 - 18h30</p>
+    </div>
     <p class="ft__links"><a href="https://www.instagram.com/cobaltcreation/" rel="noopener" target="_blank">Instagram</a><a href="../politique-de-confidentialite/">Politique de confidentialité</a></p>
   </div>
 </footer>

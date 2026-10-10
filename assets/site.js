@@ -1,19 +1,46 @@
-/* Cobalt Création, V2 « Maison ». No dependencies. */
+/* Cobalt Création, V2 « Maison ».
+   GSAP + ScrollTrigger (self-hosted) drive the scroll choreography; everything else is plain DOM.
+   Without GSAP, or with reduced motion, every element is shown in place and nothing moves on its own. */
 (() => {
   "use strict";
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const io = "IntersectionObserver" in window;
+  const G = window.gsap && window.ScrollTrigger && !reduce ? window.gsap : null;
+  if (G) G.registerPlugin(window.ScrollTrigger);
+  else document.documentElement.classList.add("no-gsap");
+  const desktop = () => matchMedia("(min-width: 901px)").matches;
 
-  /* ---------- F1 header: condense after the first 80px ---------- */
+  /* ---------- split words for mask reveals ---------- */
+  $$(".split").forEach((el) => {
+    const words = el.textContent.trim().split(/\s+/);
+    el.setAttribute("aria-label", el.textContent.trim());
+    const safe = (w) => w.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    el.innerHTML = words.map((w, i) => `<span class="sw" aria-hidden="true"><span class="sw__in" style="--w:${i}">${safe(w)}</span></span>`).join(" ");
+  });
+
+  /* ---------- reveals (IntersectionObserver; also catches content jumped past) ---------- */
+  const revealEls = $$("[data-reveal], [data-wipe], .split, .reveal-soft");
+  if (io && !reduce) {
+    const o = new IntersectionObserver((es) => {
+      for (const e of es) if (e.isIntersecting || e.boundingClientRect.top <= 0) { e.target.classList.add("is-in"); o.unobserve(e.target); }
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
+    revealEls.forEach((el) => o.observe(el));
+    // safety sweep: a fast scroll can jump over an element without the observer ever reporting it
+    const sweep = setInterval(() => {
+      const left = revealEls.filter((el) => !el.classList.contains("is-in"));
+      if (!left.length) return clearInterval(sweep);
+      left.forEach((el) => { if (el.getBoundingClientRect().top < innerHeight) { el.classList.add("is-in"); o.unobserve(el); } });
+    }, 500);
+  } else revealEls.forEach((el) => el.classList.add("is-in"));
+
+  /* ---------- header: transparent over the hero, solid after ---------- */
   const hd = $("[data-header]");
-  if (hd && "IntersectionObserver" in window) {
-    const s = document.createElement("div");
-    s.setAttribute("aria-hidden", "true");
-    s.style.cssText = "position:absolute;top:80px;left:0;width:1px;height:1px;pointer-events:none";
-    document.body.prepend(s);
-    new IntersectionObserver(([e]) => hd.classList.toggle("is-condensed", !e.isIntersecting && e.boundingClientRect.top < 0)).observe(s);
-  }
+  const heroEl = $("[data-banner]");
+  if (hd && heroEl && io) {
+    new IntersectionObserver(([e]) => hd.classList.toggle("is-over", e.isIntersecting), { rootMargin: "-76px 0px 0px 0px", threshold: 0 }).observe(heroEl);
+  } else if (hd) hd.classList.remove("is-over");
 
   /* ---------- mobile menu ---------- */
   const menuBtn = $(".hd__menu"), menu = $("[data-menu]");
@@ -22,124 +49,172 @@
     const set = (open) => {
       menuBtn.setAttribute("aria-expanded", String(open));
       menu.classList.toggle("is-open", open);
+      hd.classList.toggle("is-menu", open);
       document.documentElement.style.overflow = open ? "hidden" : "";
       label.textContent = open ? "Fermer" : "Menu";
-      if (open) $("a", menu)?.focus();
+      if (open) setTimeout(() => $("a", menu)?.focus(), 60);
     };
     menuBtn.addEventListener("click", () => set(menuBtn.getAttribute("aria-expanded") !== "true"));
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && menu.classList.contains("is-open")) { set(false); menuBtn.focus(); } });
     matchMedia("(min-width: 1240px)").addEventListener("change", (m) => m.matches && set(false));
   }
 
-  /* ---------- reveal on scroll ---------- */
-  const reveal = $$("[data-reveal]");
-  if (reveal.length && "IntersectionObserver" in window && !reduce) {
-    const io = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        // also catch content already above the fold after a jump to the bottom
-        if (e.isIntersecting || e.boundingClientRect.top <= 0) { e.target.classList.add("is-in"); io.unobserve(e.target); }
-      }
-    }, { rootMargin: "0px 0px -6% 0px", threshold: 0.08 });
-    reveal.forEach((el) => io.observe(el));
-  } else reveal.forEach((el) => el.classList.add("is-in"));
-
-  /* ---------- F2 banner: same slides, right-to-left, one advance every 3 s, endless ---------- */
-  const HOLD = 2000; // still frame, then a 1 s slide = 3 s per image, as on the live site
-  $$("[data-banner]").forEach((el) => {
-    const track = $(".bn__track", el);
-    const slides = [...track.children];
+  /* ---------- F2 hero banner: live slides, right to left, 2 s still + 1 s slide = 3 s per image ---------- */
+  const HOLD = 2000, MOVE = 1;
+  if (heroEl) {
+    const slides = $$(".sl", heroEl);
+    const imgs = slides.map((s) => $("img", s));
+    const dots = $$(".bn__dot", heroEl);
+    const pp = $(".bn__pp", heroEl);
+    const nameEl = $("[data-slide-name]", heroEl);
     const n = slides.length;
-    const dots = $$(".bn__dot", el);
-    const pp = $(".bn__pp", el);
-    if (n < 2) { $(".bn__ctrl", el)?.remove(); return; }
-    const clone = slides[0].cloneNode(true);
-    clone.setAttribute("aria-hidden", "true");
-    $$("img", clone).forEach((i) => { i.loading = "eager"; i.removeAttribute("fetchpriority"); });
-    track.appendChild(clone);
-    el.style.setProperty("--bn-time", HOLD + "ms");
-
-    let i = 0, timer = null, remaining = HOLD, startedAt = 0;
-    let userPaused = reduce, hovering = false, focused = false, visible = true, dragging = false;
-    const blocked = () => userPaused || hovering || focused || !visible || document.hidden || dragging;
-
-    const setX = (pct, px = 0) => { track.style.transform = `translate3d(calc(${pct}% + ${px}px),0,0)`; };
+    heroEl.style.setProperty("--bn-time", HOLD + "ms");
+    let i = 0, timer = null, remaining = HOLD, startedAt = 0, busy = false;
+    let userPaused = reduce, hovering = false, focused = false, visible = true;
+    const blocked = () => userPaused || hovering || focused || !visible || document.hidden || busy;
     const activate = (k) => {
-      dots.forEach((d, j) => {
-        d.classList.remove("is-active");
-        d.setAttribute("aria-current", j === k ? "true" : "false");
-      });
-      void el.offsetWidth; // restart the progress fill
+      dots.forEach((d, j) => { d.classList.remove("is-active"); d.setAttribute("aria-current", j === k ? "true" : "false"); });
+      void heroEl.offsetWidth;
       dots[k]?.classList.add("is-active");
-      const nx = slides[(k + 1) % n];
-      $$("img", nx).forEach((img) => { img.loading = "eager"; });
+      const nx = imgs[(k + 1) % n]; if (nx) nx.loading = "eager";
+      if (nameEl && slides[k].dataset.name) {
+        nameEl.classList.add("is-swap");
+        setTimeout(() => { nameEl.textContent = slides[k].dataset.name; nameEl.classList.remove("is-swap"); }, 380);
+      }
+      if (G) G.fromTo(imgs[k], { scale: 1.08 }, { scale: 1, duration: (HOLD / 1000) + MOVE + 1, ease: "none", overwrite: "auto" });
     };
     const clear = () => { if (timer) { clearTimeout(timer); timer = null; remaining = Math.max(0, remaining - (performance.now() - startedAt)); } };
-    const schedule = () => { if (blocked() || timer) return; startedAt = performance.now(); timer = setTimeout(() => { timer = null; go(i + 1); }, remaining); };
+    const schedule = () => { if (blocked() || timer || n < 2) return; startedAt = performance.now(); timer = setTimeout(() => { timer = null; go(i + 1, 1); }, remaining); };
     const sync = () => {
-      el.classList.toggle("is-paused", userPaused);
-      el.classList.toggle("is-held", !userPaused && blocked());
-      pp.setAttribute("aria-label", userPaused ? "Relancer le diaporama" : "Mettre le diaporama en pause");
+      heroEl.classList.toggle("is-paused", userPaused);
+      heroEl.classList.toggle("is-held", !userPaused && blocked());
+      if (pp) pp.setAttribute("aria-label", userPaused ? "Relancer le diaporama" : "Mettre le diaporama en pause");
       if (blocked()) clear(); else schedule();
     };
-    function go(k, animate = true) {
+    function go(k, dir) {
+      if (busy || n < 2) return;
       clear();
+      const from = i, to = ((k % n) + n) % n;
+      if (to === from) return;
       remaining = HOLD;
-      if (k < 0) { track.classList.remove("is-anim"); i = n; setX(-100 * n); void track.offsetWidth; k = n - 1; }
-      i = k;
-      track.classList.toggle("is-anim", animate && !reduce);
-      setX(-100 * i);
-      activate(i % n);
-      if (!animate || reduce) settle();
+      i = to;
+      const a = slides[from], b = slides[to];
+      b.classList.add("is-on");
+      if (G) {
+        busy = true;
+        // parallax slide: the new image enters from the right while the old one leaves at half speed
+        G.set(b, { xPercent: 100 * dir, zIndex: 2 }); G.set(a, { zIndex: 1 });
+        G.set(imgs[to], { xPercent: -50 * dir });
+        G.timeline({ defaults: { duration: MOVE, ease: "power3.inOut" }, onComplete: () => {
+          a.classList.remove("is-on"); G.set([a, imgs[from]], { xPercent: 0 }); busy = false; schedule();
+        } })
+          .to(a, { xPercent: -30 * dir }, 0)
+          .to(b, { xPercent: 0 }, 0)
+          .to(imgs[to], { xPercent: 0 }, 0);
+      } else { a.classList.remove("is-on"); schedule(); }
+      activate(to);
     }
-    function settle() {
-      if (i >= n) { track.classList.remove("is-anim"); i = 0; setX(0); }
-      schedule();
-    }
-    track.addEventListener("transitionend", (e) => { if (e.target === track && e.propertyName === "transform") settle(); });
-
-    dots.forEach((d, k) => d.addEventListener("click", () => go(k)));
-    pp.addEventListener("click", () => { userPaused = !userPaused; sync(); });
-    el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { hovering = true; sync(); } });
-    el.addEventListener("pointerleave", () => { hovering = false; sync(); });
-    el.addEventListener("focusin", (e) => { focused = e.target.matches(":focus-visible"); sync(); });
-    el.addEventListener("focusout", (e) => { if (!el.contains(e.relatedTarget)) { focused = false; sync(); } });
-    el.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") { e.preventDefault(); go(i + 1); }
-      if (e.key === "ArrowLeft") { e.preventDefault(); go(i - 1); }
+    if (n < 2) $(".bn__ctrl", heroEl)?.remove();
+    dots.forEach((d, k) => d.addEventListener("click", () => go(k, k > i ? 1 : -1)));
+    pp?.addEventListener("click", () => { userPaused = !userPaused; sync(); });
+    heroEl.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") { hovering = true; sync(); } });
+    heroEl.addEventListener("pointerleave", () => { hovering = false; sync(); });
+    heroEl.addEventListener("focusin", (e) => { focused = e.target.matches(":focus-visible"); sync(); });
+    heroEl.addEventListener("focusout", (e) => { if (!heroEl.contains(e.relatedTarget)) { focused = false; sync(); } });
+    heroEl.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") { e.preventDefault(); go(i + 1, 1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); go(i - 1, -1); }
     });
     document.addEventListener("visibilitychange", sync);
-    if ("IntersectionObserver" in window) new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }, { threshold: 0.25 }).observe(el);
-
-    // swipe and drag
-    const vp = $(".bn__viewport", el);
-    let x0 = 0, dx = 0, pid = null;
-    vp.addEventListener("pointerdown", (e) => {
-      if (e.button !== 0) return;
-      pid = e.pointerId; x0 = e.clientX; dx = 0; dragging = true; sync();
-      if (i >= n) { i = 0; }
-      track.classList.remove("is-anim");
-      vp.setPointerCapture(pid);
+    if (io) new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }, { threshold: 0.25 }).observe(heroEl);
+    // swipe
+    const stage = $("[data-slides]", heroEl);
+    let x0 = 0, pid = null;
+    stage.addEventListener("pointerdown", (e) => { if (e.button === 0) { pid = e.pointerId; x0 = e.clientX; } });
+    stage.addEventListener("pointerup", (e) => {
+      if (e.pointerId !== pid) return; pid = null;
+      const dx = e.clientX - x0;
+      if (dx < -50) go(i + 1, 1); else if (dx > 50) go(i - 1, -1);
     });
-    vp.addEventListener("pointermove", (e) => { if (e.pointerId !== pid) return; dx = e.clientX - x0; setX(-100 * i, dx); });
-    const end = (e) => {
-      if (e.pointerId !== pid) return;
-      pid = null; dragging = false;
-      const w = vp.clientWidth || 1;
-      if (dx < -Math.min(60, w * 0.12)) go(i + 1);
-      else if (dx > Math.min(60, w * 0.12)) go(i - 1);
-      else { track.classList.toggle("is-anim", !reduce); setX(-100 * i); remaining = HOLD; }
-      sync();
-    };
-    vp.addEventListener("pointerup", end);
-    vp.addEventListener("pointercancel", end);
-    vp.addEventListener("dragstart", (e) => e.preventDefault());
-
-    if (reduce) el.classList.add("is-static");
+    stage.addEventListener("dragstart", (e) => e.preventDefault());
+    if (reduce) heroEl.classList.add("is-static");
     activate(0);
     sync();
-  });
+    // the hero recedes as the page takes over
+    if (G) {
+      G.to("[data-hero-content]", { yPercent: -18, opacity: 0, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "bottom 30%", scrub: true } });
+      G.to("[data-slides]", { yPercent: 14, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "bottom top", scrub: true } });
+    }
+  }
 
-  /* ---------- AVIF probe (for neighbour preloading in the lightbox) ---------- */
+  /* ---------- scroll choreography (GSAP) ---------- */
+  if (G) {
+    const ST = window.ScrollTrigger;
+
+    // words light up as the paragraph crosses the screen
+    $$("[data-lit]").forEach((p) => {
+      const words = $$(".w", p);
+      let lit = 0;
+      ST.create({ trigger: p, start: "top 82%", end: "bottom 50%", scrub: true, onUpdate: (s) => {
+        const k = Math.round(s.progress * words.length);
+        if (k === lit) return;
+        words.forEach((w, j) => w.classList.toggle("is-lit", j < k));
+        lit = k;
+      } });
+    });
+
+    const mm = G.matchMedia();
+    mm.add("(min-width: 901px)", () => {
+      // stacking métiers: each card settles back as the next one slides over it
+      const cards = $$(".card");
+      cards.forEach((card, k) => {
+        if (k === cards.length - 1) return;
+        const st = { trigger: cards[k + 1], start: "top bottom", end: "top 30%", scrub: true };
+        G.to($(".card__in", card), { scale: 0.92, ease: "none", scrollTrigger: st });
+        G.to($(".card__veil", card), { opacity: 0.38, ease: "none", scrollTrigger: { ...st } });
+      });
+
+      // pinned horizontal gallery
+      const hx = $("[data-hx]");
+      if (hx) {
+        const track = $("[data-hx-track]", hx), bar = $("[data-hx-bar]", hx);
+        const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+        G.to(track, { x: () => -dist(), ease: "none", scrollTrigger: {
+          trigger: hx, start: "top top", end: () => "+=" + dist(), pin: $(".hx__pin", hx), scrub: 0.6, invalidateOnRefresh: true,
+          onUpdate: (s) => { if (bar) bar.style.transform = `scaleX(${s.progress})`; } } });
+      }
+
+      // mosaic photographs drift inside their frames
+      $$(".tile__img").forEach((img) => {
+        G.fromTo(img, { yPercent: -5 }, { yPercent: 5, ease: "none", scrollTrigger: { trigger: img.closest(".tile"), start: "top bottom", end: "bottom top", scrub: true } });
+      });
+    });
+
+    // the book turns toward the reader
+    const book = $("[data-book-obj]");
+    if (book) G.fromTo(book, { rotateY: -38, rotateX: 9, y: 60 }, { rotateY: -6, rotateX: 0, y: -30, ease: "none",
+      scrollTrigger: { trigger: "[data-book]", start: "top bottom", end: "bottom top", scrub: true } });
+
+    // the logo marquee answers the scroll: faster with speed, reversing with direction
+    const tracks = $$("[data-mq] .mq__track");
+    if (tracks.length) {
+      const anims = tracks.map((t) => t.getAnimations ? t.getAnimations()[0] : null).filter(Boolean);
+      let boost = 0, dirSign = 1;
+      ST.create({ trigger: "[data-mq]", start: "top bottom", end: "bottom top", onUpdate: (s) => {
+        boost = Math.min(Math.abs(s.getVelocity()) / 250, 6); dirSign = s.direction;
+      } });
+      G.ticker.add(() => {
+        boost *= 0.92;
+        anims.forEach((a) => { a.playbackRate = dirSign * (1 + boost); });
+      });
+    }
+
+    // images and fonts change heights: measure again once they are in
+    addEventListener("load", () => ST.refresh());
+    document.fonts?.ready.then(() => ST.refresh());
+  }
+
+  /* ---------- AVIF probe (neighbour preloading in the lightbox) ---------- */
   let avif = false;
   const probe = new Image();
   probe.onload = () => { avif = probe.width > 0; };
@@ -158,9 +233,7 @@
       cur = (k + items.length) % items.length;
       const it = items[cur];
       img.classList.add("is-loading");
-      src.srcset = it.avif;
-      img.src = it.jpg;
-      img.alt = it.alt;
+      src.srcset = it.avif; img.src = it.jpg; img.alt = it.alt;
       count.textContent = `${cur + 1} / ${items.length}`;
       t.textContent = it.t; s.textContent = it.s; d.textContent = it.d;
       t.hidden = !it.t; s.hidden = !it.s; d.hidden = !it.d;
@@ -197,12 +270,11 @@
       if (e.key === "ArrowRight") { e.preventDefault(); show(cur + 1); }
       if (e.key === "ArrowLeft") { e.preventDefault(); show(cur - 1); }
     });
-    window.addEventListener("popstate", () => {
+    addEventListener("popstate", () => {
       const m = location.hash.match(/^#piece-(\d+)$/);
       if (!m && lb.open) { pushed = false; close(true); }
       else if (m) { const k = items.findIndex((it) => it.n === +m[1]); if (k >= 0) open(k, true); }
     });
-    // swipe
     const stage = $(".lb__stage", lb);
     let sx = 0, sy = 0, sp = null;
     stage.addEventListener("pointerdown", (e) => { sp = e.pointerId; sx = e.clientX; sy = e.clientY; });
@@ -211,7 +283,6 @@
       const dx = e.clientX - sx, dy = e.clientY - sy;
       if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(cur + (dx < 0 ? 1 : -1));
     });
-    // deep link on arrival
     const m = location.hash.match(/^#piece-(\d+)$/);
     if (m) { const k = items.findIndex((it) => it.n === +m[1]); if (k >= 0) { history.replaceState(null, "", location.pathname + location.search); open(k); } }
   }
@@ -223,7 +294,7 @@
       fig.classList.add("is-manual");
       $(".tile__play", fig)?.addEventListener("click", (e) => { e.currentTarget.remove(); fig.classList.remove("is-manual"); v.controls = true; v.play().catch(() => {}); }, { once: true });
     };
-    if (reduce || !("IntersectionObserver" in window)) { manual(); return; }
+    if (reduce || !io) { manual(); return; }
     new IntersectionObserver(([e]) => {
       if (e.isIntersecting) { v.preload = "auto"; v.play().catch((err) => { if (err && err.name === "NotAllowedError") manual(); }); } else v.pause();
     }, { threshold: 0.2 }).observe(v);
@@ -256,7 +327,7 @@
 
   /* ---------- contact form: validated, then opens the visitor's mail app ---------- */
   $$("form[data-mailto]").forEach((form) => {
-    const fields = { nom: $("#f-nom", form), prenom: $("#f-prenom", form), email: $("#f-email", form), message: $("#f-msg", form) };
+    const f = { nom: $("#f-nom", form), prenom: $("#f-prenom", form), email: $("#f-email", form), message: $("#f-msg", form) };
     const err = (input, msg) => {
       const field = input.closest(".field");
       field.classList.toggle("is-invalid", !!msg);
@@ -265,20 +336,20 @@
     };
     const check = () => {
       let ok = true;
-      const em = fields.email.value.trim();
-      if (!em) { err(fields.email, "Merci d’indiquer votre adresse email."); ok = false; }
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { err(fields.email, "Cette adresse email ne semble pas complète."); ok = false; }
-      else err(fields.email, "");
-      if (!fields.message.value.trim()) { err(fields.message, "Merci d’écrire votre message."); ok = false; } else err(fields.message, "");
+      const em = f.email.value.trim();
+      if (!em) { err(f.email, "Merci d’indiquer votre adresse email."); ok = false; }
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)) { err(f.email, "Cette adresse email ne semble pas complète."); ok = false; }
+      else err(f.email, "");
+      if (!f.message.value.trim()) { err(f.message, "Merci d’écrire votre message."); ok = false; } else err(f.message, "");
       return ok;
     };
-    Object.values(fields).forEach((f) => f.addEventListener("blur", () => { if (f.closest(".field").classList.contains("is-invalid")) check(); }));
+    Object.values(f).forEach((x) => x.addEventListener("blur", () => { if (x.closest(".field").classList.contains("is-invalid")) check(); }));
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       if (!check()) { $("[aria-invalid='true']", form)?.focus(); return; }
-      const who = [fields.prenom.value.trim(), fields.nom.value.trim()].filter(Boolean).join(" ");
+      const who = [f.prenom.value.trim(), f.nom.value.trim()].filter(Boolean).join(" ");
       const subject = "Demande de contact" + (who ? " - " + who : "");
-      const body = `${fields.message.value.trim()}\n\n${who}\n${fields.email.value.trim()}`;
+      const body = `${f.message.value.trim()}\n\n${who}\n${f.email.value.trim()}`;
       location.href = `mailto:${form.dataset.mailto}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       const note = $(".form__note", form);
       if (note) note.textContent = `Votre messagerie vient de s’ouvrir avec votre message. Si rien ne s’est passé, écrivez-nous directement à ${form.dataset.mailto}.`;

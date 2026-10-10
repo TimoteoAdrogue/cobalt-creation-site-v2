@@ -54,7 +54,7 @@ const contrast = `(()=>{
     if(min<need)bad.push({text:t.textContent.trim().slice(0,40),cls:el.className&&el.className.baseVal===undefined?el.className:'',ratio:+min.toFixed(2),need,size})}
   return bad})()`;
 
-const hiddenLeft = `(()=>[...document.querySelectorAll('[data-reveal],[data-settle]')].filter(e=>getComputedStyle(e).opacity<0.99&&!e.closest('[hidden]')).map(e=>e.className).slice(0,10))()`;
+const hiddenLeft = `(()=>{const out=[];for(const e of document.querySelectorAll('[data-reveal],[data-settle],[data-wipe],.split,.cs,[data-crew],.reveal-soft')){if(e.closest('[hidden],dialog,.bands'))continue;if(!e.classList.contains('is-in'))out.push('not-in:'+e.className)}for(const e of document.querySelectorAll('main *')){if(e.closest('[hidden],dialog,.bands,.hero,.mq,.trust__grid'))continue;if(e.style&&e.style.opacity==='0')out.push('inline-0:'+e.className)}return out.slice(0,10)})()`;
 
 for (const path of PAGES) {
   for (const [w, h, mobile] of WIDTHS) {
