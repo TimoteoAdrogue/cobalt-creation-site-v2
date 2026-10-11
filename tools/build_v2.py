@@ -76,6 +76,7 @@ def head(slug):
 <script>document.documentElement.classList.add('js'){INTRO_SNIPPET if slug == "" else ""}</script>
 <script src="{b}assets/vendor/gsap.min.js" defer></script>
 <script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="{b}assets/vendor/lenis.min.js" defer></script>
 <script src="{b}assets/site.js" defer></script>
 </head>"""
 
@@ -95,7 +96,7 @@ def header(slug, over_hero):
   </nav>
   <button class="hd__menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hd__burger" aria-hidden="true"></span><span data-menu-label>Menu</span></button>
 </header>
-<div class="menu" id="menu" data-menu>
+<div class="menu" id="menu" data-menu data-lenis-prevent>
   <ul>
 {nav_items(slug, "menu__link")}
   </ul>
@@ -107,7 +108,7 @@ def header(slug, over_hero):
 
 def contact_band(slug):
     return f"""<section class="callout" aria-labelledby="callout-t">
-  <div class="wrap">
+  <div class="wrap" data-end-in>
     <a class="callout__big" href="{link(slug, 'contact-feedback')}" id="callout-t"><span class="split">Nous contacter</span><span class="callout__arrow" aria-hidden="true">&rarr;</span></a>
     <p class="callout__ways"><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></p>
   </div>
@@ -118,7 +119,7 @@ def footer(slug):
     b = base(slug)
     return f"""<footer class="ft">
   <div class="wrap ft__in">
-    <img src="{b}assets/media/logo-cobalt.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
+    <img src="{b}assets/media/logo-cobalt-creme.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
     <div>
       <p class="ft__name">Agence Cobalt Création</p>
       <p class="ft__addr"><span>{esc(c.ADDRESS_LINE)}</span><span class="ft__sep"> / </span><span><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a></span><span class="ft__sep"> / </span><span><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></span></p>
@@ -163,10 +164,10 @@ def lines(text):
     return f'<span class="split">{esc(text)}</span>'
 
 
-def page(slug, main, body_cls, lightbox=False, over_hero=True):
+def page(slug, main, body_cls, lightbox=False, over_hero=True, end=""):
     lb = ""
     if lightbox:
-        lb = """<dialog class="lb" data-lightbox aria-label="Réalisation agrandie">
+        lb = """<dialog class="lb" data-lightbox aria-label="Réalisation agrandie" data-lenis-prevent>
   <div class="lb__stage"><picture><source type="image/avif"><img alt=""></picture></div>
   <div class="lb__meta"><p class="lb__count" aria-live="polite"></p><h2 class="lb__t"></h2><p class="lb__s"></p><p class="lb__d"></p></div>
   <button class="lb__btn lb__prev" type="button" aria-label="Réalisation précédente">&larr;</button>
@@ -180,7 +181,9 @@ def page(slug, main, body_cls, lightbox=False, over_hero=True):
 <main id="contenu">
 {main}
 </main>
-{footer(slug)}
+<div class="end" data-end>
+{end}{footer(slug)}
+</div>
 {lb}
 </body>
 </html>
@@ -204,7 +207,23 @@ def build_home():
   <div class="wrap manifest__in">
     <h2 id="agence-t" class="eyebrow">{esc(h['title'])}</h2>
     <p class="manifest__lit" data-lit>{words}</p>
-    <p class="manifest__mission" data-reveal>{esc(mission).replace("donner de l’âme et de la couleur", "<em>donner de l’âme et de la couleur</em>", 1)}</p>
+  </div>
+</section>"""
+
+    # the frame opens: a photograph of the client's work grows from a small frame to full screen, the mission over it
+    kicker, sentence = mission.split(" : ", 1)
+    sentence = sentence[0].upper() + sentence[1:]
+    fw = c.works("design-graphique-design-papier")[9]          # Givenchy, Carnet (4633 x 3089)
+    fl = c.work_lines(fw)
+    big = esc(sentence).replace("en offrant des créations sur-mesure", "<em>en offrant des créations sur-mesure</em>", 1)
+    frame = f"""<section class="frame" data-frame aria-labelledby="frame-t">
+  <div class="frame__pin">
+    <div class="frame__media" data-frame-media>{A.picture_wide(fw["media"], b, "100vh", alt="", cls="frame__img")}<span class="frame__shade" aria-hidden="true"></span></div>
+    <div class="frame__text wrap">
+      <h2 class="frame__k" id="frame-t">{esc(kicker)}</h2>
+      <p class="frame__p split">{big}</p>
+    </div>
+    <p class="frame__cap wrap" aria-hidden="true">{esc(" · ".join(fl))}</p>
   </div>
 </section>"""
 
@@ -213,21 +232,20 @@ def build_home():
         paras = "".join(f"<p>{esc(p)}</p>" for p in col["paras"])
         lead = f'<p class="card__lead">{esc(col["lead"])}</p>' if col["lead"] else ""
         lis = "".join(f"<li>{esc(x)}</li>" for x in col["bullets"])
-        pic = A.picture(col["image"], b, "(max-width: 900px) 92vw, 50vw", alt="", cls="card__img")
+        pic = A.picture(col["image"], b, "(max-width: 900px) 100vw, 56vw", alt="", cls="card__img")
         cards.append(f"""<article class="card" style="--i:{i}">
       <div class="card__in">
         <span class="card__veil" aria-hidden="true"></span>
         <a class="card__media" href="{link(slug, col['slug'])}" tabindex="-1" aria-hidden="true">{pic}</a>
         <div class="card__text">
+          <p class="card__num" aria-hidden="true"><span>0{i + 1}</span> / 0{len(h["columns"])}</p>
           <h3 class="card__t"><a href="{link(slug, col['slug'])}">{esc(col['title'])}</a></h3>
           {paras}{lead}<ul>{lis}</ul>
           <a class="more" href="{link(slug, col['slug'])}">Voir les réalisations <span aria-hidden="true">&rarr;</span></a>
         </div>
       </div>
     </article>""")
-    metiers = f"""<section class="stack" aria-label="Nos métiers">
-  <div class="wrap">{''.join(cards)}</div>
-</section>"""
+    metiers = f"""<section class="stack" aria-label="Nos métiers">{''.join(cards)}</section>"""
 
     # pinned horizontal gallery: four works per rubric, in live order, linked to their page
     items = []
@@ -236,13 +254,16 @@ def build_home():
         for w in ws:
             n = c.works(s).index(w) + 1
             ln = c.work_lines(w)
-            pic = A.picture(w["media"], b, "(max-width: 767px) 78vw, 34vw", alt=c.work_alt(w), cls="hx__img")
-            items.append(f'<li class="hx__item"><a href="{link(slug, s)}#piece-{n}"><span class="hx__frame">{pic}</span>'
+            m = c.MEDIA_INDEX[w["media"]]
+            ar = m["w"] / m["h"]
+            pic = A.picture(w["media"], b, f"(max-width: 900px) 78vw, calc(62vh * {ar * 1.16:.2f})", alt=c.work_alt(w), cls="hx__img")
+            items.append(f'<li class="hx__item" style="--ar:{ar:.3f}"><a href="{link(slug, s)}#piece-{n}"><span class="hx__frame">{pic}</span>'
                          f'<span class="hx__cap"><span class="hx__t">{esc(ln[0])}</span><span class="hx__s">{esc(" · ".join(ln[1:]))}</span>'
                          f'<span class="hx__r">{esc(LABEL[s])}</span></span></a></li>')
     rubric_links = "".join(f'<li><a href="{link(slug, s)}">{esc(LABEL[s])}</a></li>' for s in c.RUBRICS)
-    works = f"""<section class="hx" aria-labelledby="hx-t" data-hx>
+    works = f"""<section class="hx" aria-labelledby="hx-t" data-hx data-scene="cream">
   <div class="hx__pin">
+    <span class="hx__ghost" aria-hidden="true" data-hx-ghost>Réalisations</span>
     <div class="hx__head wrap">
       <h2 id="hx-t" class="h-sec">Réalisations</h2>
       <ul class="hx__rubrics">{rubric_links}</ul>
@@ -274,7 +295,7 @@ def build_home():
                       f'<div class="fb__face fb__front">{page_img(front, k == 0)}<span class="fb__sheen" aria-hidden="true"></span></div>'
                       f'<div class="fb__face fb__back">{page_img(back)}<span class="fb__sheen" aria-hidden="true"></span></div></div>')
     strip = "".join(f'<li>{page_img(pg)}</li>' for pg in bk)
-    book = f"""<section class="fb" aria-labelledby="book-t" data-fb>
+    book = f"""<section class="fb" aria-labelledby="book-t" data-fb data-scene="ink">
   <div class="fb__pin">
     <div class="fb__head wrap">
       <h2 id="book-t" class="h-sec">{lines(h['book_title'])}</h2>
@@ -297,7 +318,7 @@ def build_home():
     row2 = "".join(item(l) for l in logos[half:])
     grid = "".join(item(l) for l in logos)
     names = "".join(f"<li>{esc(l['name'])}</li>" for l in logos)
-    trust = f"""<section class="trust" aria-labelledby="trust-t">
+    trust = f"""<section class="trust" aria-labelledby="trust-t" data-scene="paper">
   <div class="wrap"><h2 id="trust-t" class="h-sec trust__t">{lines(h['trust_title'])}</h2></div>
   <ul class="sr-only">{names}</ul>
   <div class="mq" aria-hidden="true" data-mq>
@@ -306,7 +327,7 @@ def build_home():
   </div>
   <div class="wrap trust__grid" aria-hidden="true">{grid}</div>
 </section>"""
-    page(slug, top + manifest + metiers + works + book + trust + contact_band(slug), "p-home")
+    page(slug, top + manifest + frame + metiers + works + book + trust, "p-home", end=contact_band(slug))
 
 
 def tile(w, n, b, cls):
@@ -365,7 +386,7 @@ def build_rubric(slug):
     film = ""
     if slug == "ateliers-de-personnalisation":
         A.file("givenchy-film-1280.jpg"); A.file("givenchy-film-1280.avif")
-        film = f"""<section class="film" aria-labelledby="film-t">
+        film = f"""<section class="film" aria-labelledby="film-t" data-scene="ink">
   <div class="wrap">
     <div class="film__frame" data-film="{c.YOUTUBE_ID}" data-title="{esc(c.YOUTUBE_TITLE)}">
       <button class="film__btn" type="button" aria-describedby="film-n"><picture><source type="image/avif" srcset="{b}assets/media/givenchy-film-1280.avif"><img src="{b}assets/media/givenchy-film-1280.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async"></picture>
@@ -383,7 +404,7 @@ def build_rubric(slug):
     lead_words = " ".join(f'<span class="w">{esc(w)}</span>' for w in intro[0].split())
     rest = "".join(f"<p>{esc(p)}</p>" for p in intro[1:])
     nxt = NEXT[slug]
-    nimg = A.picture_wide(c.sharp_slides(nxt, 1440, 720, 1)[0], b, "78vh", alt="", cls="next__img")
+    nimg = A.picture_wide(c.sharp_slides(nxt, 1440, 900, 1)[0], b, "100vh", alt="", cls="next__img")
     main = f"""{hero(slug, title, "")}
 <section class="intro">
   <div class="wrap intro__in">
@@ -391,18 +412,20 @@ def build_rubric(slug):
     <div class="intro__rest" data-reveal>{rest}</div>
   </div>
 </section>
-<section class="works" aria-label="Réalisations">
+<section class="works" aria-label="Réalisations" data-scene="paper">
   <div class="wrap">
     {''.join(blocks)}
   </div>
 </section>
 {film}
-<a class="next" href="{link(slug, nxt)}">
-  <span class="next__media" aria-hidden="true">{nimg}</span>
-  <span class="next__k">Rubrique suivante</span>
-  <span class="next__t">{esc(LABEL[nxt])}</span>
-</a>"""
-    page(slug, main, "p-rubric", lightbox=True)
+<div class="nx" data-nx data-scene="ink">
+  <a class="next" href="{link(slug, nxt)}">
+    <span class="next__media" aria-hidden="true" data-nx-media>{nimg}</span>
+    <span class="next__k">Rubrique suivante</span>
+    <span class="next__t">{esc(LABEL[nxt])}</span>
+  </a>
+</div>"""
+    page(slug, main, "p-rubric", lightbox=True, end=contact_band(slug))
 
 
 def build_contact():
@@ -493,7 +516,7 @@ def main():
     shutil.copy2(c.MEDIA / "fonts/OFL-jost.txt", fonts / "OFL-jost.txt")
     vendor = SITE / "assets/vendor"
     vendor.mkdir(parents=True, exist_ok=True)
-    for f in ("gsap.min.js", "ScrollTrigger.min.js"):
+    for f in ("gsap.min.js", "ScrollTrigger.min.js", "lenis.min.js", "LICENSE-lenis.txt"):
         shutil.copy2(c.MEDIA / "vendor" / f, vendor / f)
     c.write(SITE, "robots.txt", "User-agent: *\nDisallow: /\n")
     (SITE / ".nojekyll").write_text("")

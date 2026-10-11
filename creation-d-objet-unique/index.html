@@ -28,6 +28,7 @@ L&#x27;illustration et la calligraphie">
 <script>document.documentElement.classList.add('js')</script>
 <script src="../assets/vendor/gsap.min.js" defer></script>
 <script src="../assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="../assets/vendor/lenis.min.js" defer></script>
 <script src="../assets/site.js" defer></script>
 </head>
 <body class="p-rubric">
@@ -49,7 +50,7 @@ L&#x27;illustration et la calligraphie">
   </nav>
   <button class="hd__menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hd__burger" aria-hidden="true"></span><span data-menu-label>Menu</span></button>
 </header>
-<div class="menu" id="menu" data-menu>
+<div class="menu" id="menu" data-menu data-lenis-prevent>
   <ul>
 <li><a class="menu__link" href="../">Accueil</a></li>
 <li><a class="menu__link" href="../creation-d-objet-unique/" aria-current="page">Nos ateliers signatures</a></li>
@@ -82,7 +83,7 @@ L&#x27;illustration et la calligraphie">
     <div class="intro__rest" data-reveal><p>Immédiatement disponibles, efficaces et parfaitement conçus, nos Ateliers Signatures, pensés autour de l’art et de l’artisanat français, s’adaptent à votre direction artistique et à votre stratégie marketing.</p><p>Grâce à nos artistes et artisans d’exception formés chez nous, vos clients vivront des moments uniques et personnalisés, ressentant le privilège d’une attention exclusive.</p></div>
   </div>
 </section>
-<section class="works" aria-label="Réalisations">
+<section class="works" aria-label="Réalisations" data-scene="paper">
   <div class="wrap">
     <div class="mosaic"><figure class="tile s1" id="piece-1" data-wipe><a class="tile__link" href="#piece-1" data-lb="1" data-item='{&quot;t&quot;: &quot;&quot;, &quot;s&quot;: &quot;&quot;, &quot;d&quot;: &quot;&quot;, &quot;jpg&quot;: &quot;../assets/media/2d078e6f56e0-1600.jpg&quot;, &quot;avif&quot;: &quot;../assets/media/2d078e6f56e0-1600.avif&quot;, &quot;alt&quot;: &quot;Réalisation 1&quot;}' aria-label="Agrandir : Réalisation 1"><picture><source type="image/avif" srcset="../assets/media/2d078e6f56e0-800.avif 800w, ../assets/media/2d078e6f56e0-1600.avif 1600w" sizes="(max-width: 767px) 92vw, 32vw"><img class="tile__img" src="../assets/media/2d078e6f56e0-800.jpg" srcset="../assets/media/2d078e6f56e0-800.jpg 800w, ../assets/media/2d078e6f56e0-1600.jpg 1600w" sizes="(max-width: 767px) 92vw, 32vw" width="800" height="800" alt="Réalisation 1" loading="lazy" decoding="async"></picture></a></figure><figure class="tile s2" id="piece-2" data-wipe><a class="tile__link" href="#piece-2" data-lb="2" data-item='{&quot;t&quot;: &quot;La Gravure&quot;, &quot;s&quot;: &quot;&quot;, &quot;d&quot;: &quot;Idéale pour sublimer le verre, certains plastiques, la céramique, la laque...\nLa gravure est réalisée par un artiste à la main.\nNous pouvons calligraphier un texte mais également reproduire ou créer\nune illustration selon votre brief.\nLes gravures peuvent être colorées ou dorées à la feuille.&quot;, &quot;jpg&quot;: &quot;../assets/media/50a83d9d3d18-1600.jpg&quot;, &quot;avif&quot;: &quot;../assets/media/50a83d9d3d18-1600.avif&quot;, &quot;alt&quot;: &quot;La Gravure&quot;}' aria-label="Agrandir : La Gravure"><picture><source type="image/avif" srcset="../assets/media/50a83d9d3d18-800.avif 800w, ../assets/media/50a83d9d3d18-1600.avif 1600w" sizes="(max-width: 767px) 92vw, 64vw"><img class="tile__img" src="../assets/media/50a83d9d3d18-800.jpg" srcset="../assets/media/50a83d9d3d18-800.jpg 800w, ../assets/media/50a83d9d3d18-1600.jpg 1600w" sizes="(max-width: 767px) 92vw, 64vw" width="800" height="564" alt="La Gravure" loading="lazy" decoding="async"></picture></a><figcaption class="tile__cap"><span class="tile__t">La Gravure</span><span class="tile__s"></span><span class="tile__d">Idéale pour sublimer le verre, certains plastiques, la céramique, la laque...
 La gravure est réalisée par un artiste à la main.
@@ -134,15 +135,23 @@ Nos artistes peuvent également réaliser des pièces uniques, des cadeaux d’e
   </div>
 </section>
 
-<a class="next" href="../ateliers-de-personnalisation/">
-  <span class="next__media" aria-hidden="true"><picture><source type="image/avif" srcset="../assets/media/572f520a8a4d-x1280.avif 1280w, ../assets/media/572f520a8a4d-x1920.avif 1920w, ../assets/media/572f520a8a4d-x2560.avif 2560w, ../assets/media/572f520a8a4d-x5036.avif 5036w" sizes="max(100vw, calc(78vh * 4.693))"><img class="next__img" src="../assets/media/572f520a8a4d-x1280.jpg" srcset="../assets/media/572f520a8a4d-x1280.jpg 1280w, ../assets/media/572f520a8a4d-x1920.jpg 1920w, ../assets/media/572f520a8a4d-x2560.jpg 2560w, ../assets/media/572f520a8a4d-x5036.jpg 5036w" sizes="max(100vw, calc(78vh * 4.693))" width="1280" height="273" alt="" loading="lazy" decoding="async"></picture></span>
-  <span class="next__k">Rubrique suivante</span>
-  <span class="next__t">Nos animations retail sur mesure</span>
-</a>
+<div class="nx" data-nx data-scene="ink">
+  <a class="next" href="../ateliers-de-personnalisation/">
+    <span class="next__media" aria-hidden="true" data-nx-media><picture><source type="image/avif" srcset="../assets/media/572f520a8a4d-x1280.avif 1280w, ../assets/media/572f520a8a4d-x1920.avif 1920w, ../assets/media/572f520a8a4d-x2560.avif 2560w, ../assets/media/572f520a8a4d-x5036.avif 5036w" sizes="max(100vw, calc(100vh * 4.693))"><img class="next__img" src="../assets/media/572f520a8a4d-x1280.jpg" srcset="../assets/media/572f520a8a4d-x1280.jpg 1280w, ../assets/media/572f520a8a4d-x1920.jpg 1920w, ../assets/media/572f520a8a4d-x2560.jpg 2560w, ../assets/media/572f520a8a4d-x5036.jpg 5036w" sizes="max(100vw, calc(100vh * 4.693))" width="1280" height="273" alt="" loading="lazy" decoding="async"></picture></span>
+    <span class="next__k">Rubrique suivante</span>
+    <span class="next__t">Nos animations retail sur mesure</span>
+  </a>
+</div>
 </main>
-<footer class="ft">
+<div class="end" data-end>
+<section class="callout" aria-labelledby="callout-t">
+  <div class="wrap" data-end-in>
+    <a class="callout__big" href="../contact-feedback/" id="callout-t"><span class="split">Nous contacter</span><span class="callout__arrow" aria-hidden="true">&rarr;</span></a>
+    <p class="callout__ways"><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a><a href="mailto:contact@cobaltcreation.com">contact@cobaltcreation.com</a></p>
+  </div>
+</section><footer class="ft">
   <div class="wrap ft__in">
-    <img src="../assets/media/logo-cobalt.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
+    <img src="../assets/media/logo-cobalt-creme.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
     <div>
       <p class="ft__name">Agence Cobalt Création</p>
       <p class="ft__addr"><span>35, Boulevard Berthier - 75017 Paris</span><span class="ft__sep"> / </span><span><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></span><span class="ft__sep"> / </span><span><a href="mailto:contact@cobaltcreation.com">contact@cobaltcreation.com</a></span></p>
@@ -151,7 +160,8 @@ Nos artistes peuvent également réaliser des pièces uniques, des cadeaux d’e
     <p class="ft__links"><a href="https://www.instagram.com/cobaltcreation/" rel="noopener" target="_blank">Instagram</a><a href="../politique-de-confidentialite/">Politique de confidentialité</a></p>
   </div>
 </footer>
-<dialog class="lb" data-lightbox aria-label="Réalisation agrandie">
+</div>
+<dialog class="lb" data-lightbox aria-label="Réalisation agrandie" data-lenis-prevent>
   <div class="lb__stage"><picture><source type="image/avif"><img alt=""></picture></div>
   <div class="lb__meta"><p class="lb__count" aria-live="polite"></p><h2 class="lb__t"></h2><p class="lb__s"></p><p class="lb__d"></p></div>
   <button class="lb__btn lb__prev" type="button" aria-label="Réalisation précédente">&larr;</button>

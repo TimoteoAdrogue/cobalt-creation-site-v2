@@ -22,6 +22,7 @@
 <script>document.documentElement.classList.add('js')</script>
 <script src="../assets/vendor/gsap.min.js" defer></script>
 <script src="../assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="../assets/vendor/lenis.min.js" defer></script>
 <script src="../assets/site.js" defer></script>
 </head>
 <body class="p-contact">
@@ -43,7 +44,7 @@
   </nav>
   <button class="hd__menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hd__burger" aria-hidden="true"></span><span data-menu-label>Menu</span></button>
 </header>
-<div class="menu" id="menu" data-menu>
+<div class="menu" id="menu" data-menu data-lenis-prevent>
   <ul>
 <li><a class="menu__link" href="../">Accueil</a></li>
 <li><a class="menu__link" href="../creation-d-objet-unique/">Nos ateliers signatures</a></li>
@@ -92,9 +93,10 @@
   </div>
 </section>
 </main>
+<div class="end" data-end>
 <footer class="ft">
   <div class="wrap ft__in">
-    <img src="../assets/media/logo-cobalt.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
+    <img src="../assets/media/logo-cobalt-creme.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
     <div>
       <p class="ft__name">Agence Cobalt Création</p>
       <p class="ft__addr"><span>35, Boulevard Berthier - 75017 Paris</span><span class="ft__sep"> / </span><span><a href="tel:+33144098185">+33 (0) 1 44 09 81 85</a></span><span class="ft__sep"> / </span><span><a href="mailto:contact@cobaltcreation.com">contact@cobaltcreation.com</a></span></p>
@@ -103,6 +105,7 @@
     <p class="ft__links"><a href="https://www.instagram.com/cobaltcreation/" rel="noopener" target="_blank">Instagram</a><a href="../politique-de-confidentialite/">Politique de confidentialité</a></p>
   </div>
 </footer>
+</div>
 
 </body>
 </html>

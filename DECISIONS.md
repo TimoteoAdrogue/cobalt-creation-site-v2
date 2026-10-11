@@ -91,3 +91,21 @@ Nothing was taken from V1 or invented.
   own titles. Phones and reduced motion get a swipeable page strip. The PDF download stays.
 - **Typography:** Jost italic for the emphasis words of the main statements (same family, second voice).
 - Headings split into words for reveals stay fully readable by screen readers (both V2 and V3).
+
+## Fourth pass (2026-10-11): the pages after the hero become scenes
+Feedback: the heroes were strong, but below them both sites read as ordinary pages with no transitions.
+- **Both sites:** weighted smooth scrolling on mouse and trackpad (Lenis 1.1.13, MIT, self-hosted, driven by
+  GSAP's clock so every scrubbed scene moves in step); touch screens keep native scrolling and reduced motion
+  turns it off. The header steps aside while reading down and returns on the way up. The footer became an end
+  panel that the page lifts off (only when it fits on screen), its call to contact rising out of the depth.
+- **V2 « Maison »:** the hero stays in place and darkens while the manifesto slides over it like a sheet; the
+  mission opens from a small frame to a full-screen photograph (the client's Givenchy notebooks, from their
+  Studio graphique works); the three métiers are full-screen panels that stack, each settling back as the next
+  covers it; the works gallery shows each photograph at its own proportions, sliding inside its frame, with the
+  title drifting behind; the ground colour flows white → cream → ink → white between scenes; the book rises and
+  comes upright; the logo rows slide in from opposite sides; the next rubric opens from a frame to full screen.
+- **V3 « Atelier »:** the signature techniques hold still as an index of ten; each photograph opens from a slit
+  (the cut of an engraving tool) and the last one widens over the screen before the page moves on; the logo wall
+  assembles out of depth; a gold light crosses the book's cover; on rubric pages a gold light passes through the
+  opening paragraph, and the next rubric is cut open by a gold line that parts like a slit.
+- The mission sentence in V2 is the live one, split at its own colon into a label and a statement.

@@ -62,6 +62,7 @@ def head(slug):
 <script>document.documentElement.classList.add('js')</script>
 <script src="{b}assets/vendor/gsap.min.js" defer></script>
 <script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="{b}assets/vendor/lenis.min.js" defer></script>
 {'<script src="assets/hero-gl.js" defer></script>' if slug == "" else ""}
 <script src="{b}assets/site.js" defer></script>
 </head>"""
@@ -81,7 +82,7 @@ def topbar(slug):
     <button class="tb__menu" type="button" aria-expanded="false" aria-controls="ov"><span class="tb__bars" aria-hidden="true"></span><span data-menu-label>Menu</span></button>
   </div>
 </header>
-<nav class="ov" id="ov" aria-label="Navigation principale" data-ov>
+<nav class="ov" id="ov" aria-label="Navigation principale" data-ov data-lenis-prevent>
   <ul>{''.join(items)}</ul>
   <div class="ov__foot"><span>{esc(c.ADDRESS_LINE)}</span><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a><a href="mailto:{c.EMAIL}">{c.EMAIL}</a><span>{esc(c.typo(c.HOURS))}</span></div>
 </nav>"""
@@ -90,8 +91,13 @@ def topbar(slug):
 def footer(slug):
     b = base(slug)
     nav = "".join(f'<li><a href="{link(slug, t)}">{esc(l)}</a></li>' for t, l in c.NAV)
-    return f"""<footer class="ft3">
+    cta = "" if slug == "contact-feedback" else f"""<div class="ft3__cta" data-end-in>
+      <a class="ft3__big" href="{link(slug, 'contact-feedback')}"><span>Nous</span> <em>contacter</em></a>
+      <p class="ft3__ways"><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></p>
+    </div>"""
+    return f"""<footer class="ft3 end" data-end>
   <div class="wrap">
+    {cta}
     <div class="ft3__grid">
       <div>
         <img src="{b}assets/media/logo-cobalt-creme.png" width="653" height="337" alt="Cobalt Création" loading="lazy">
@@ -106,7 +112,7 @@ def footer(slug):
 </footer>"""
 
 
-VIEWER = """<dialog class="vw" data-viewer aria-label="Réalisation agrandie">
+VIEWER = """<dialog class="vw" data-viewer aria-label="Réalisation agrandie" data-lenis-prevent>
   <div class="vw__stage"><picture><source type="image/avif"><img alt=""></picture></div>
   <div class="vw__meta"><p class="vw__count" aria-live="polite"></p><h2 class="vw__t"></h2><p class="vw__s"></p><p class="vw__d"></p></div>
   <button class="vw__btn vw__prev" type="button" aria-label="Réalisation précédente">&larr;</button>
@@ -217,7 +223,7 @@ def build_home():
         <p>{esc(c.work_desc(w))}</p>
       </li>""")
     intro_sig = c.intro("creation-d-objet-unique")[0]
-    gestes = f"""<section class="sec gestes" aria-labelledby="gestes-t">
+    gestes = f"""<section class="sec gestes" aria-labelledby="gestes-t" data-gx>
   <div class="wrap">
     <div class="sec__head" data-settle>
       <h2 id="gestes-t" class="d2 split">{esc(LABEL['creation-d-objet-unique'])}</h2>
@@ -225,8 +231,9 @@ def build_home():
     </div>
   </div>
   <div class="gestes__body">
-    <div class="gestes__media" aria-hidden="true">{''.join(media)}</div>
-    <div class="gestes__listwrap"><span class="gestes__line" aria-hidden="true"><span data-g-line></span></span><ul class="gestes__list">{''.join(items)}</ul></div>
+    <div class="gestes__media" aria-hidden="true">{''.join(media)}<span class="gestes__veil" data-g-veil></span></div>
+    <div class="gestes__listwrap"><span class="gestes__line" aria-hidden="true"><span data-g-line></span></span>
+      <div class="gestes__inner"><p class="gestes__count" aria-hidden="true"><span data-g-count>01</span> / {len(techs):02d}</p><ul class="gestes__list">{''.join(items)}</ul></div></div>
   </div>
   <div class="wrap">
     <p class="reals__more"><a class="link" href="creation-d-objet-unique/">{esc(LABEL['creation-d-objet-unique'])} <span aria-hidden="true">&rarr;</span></a></p>
@@ -265,7 +272,7 @@ def build_home():
         delay = (i % 7 + i // 7) * 0.32
         logo_items.append(f'<li><span class="logo" role="img" aria-label="{esc(l["name"])}" style="--d:{delay:.2f};-webkit-mask-image:url({url});mask-image:url({url})"></span></li>')
     logos = "".join(logo_items)
-    maisons = f"""<section class="sec" aria-labelledby="maisons-t">
+    maisons = f"""<section class="sec maisons" aria-labelledby="maisons-t">
   <div class="wrap">
     <div class="sec__head"><h2 id="maisons-t" class="d2 split">{esc(h['trust_title'])}</h2></div>
     <ul class="wall" data-wall>{logos}</ul>
@@ -276,7 +283,7 @@ def build_home():
         A.file(f)
     book = f"""<section class="sec sec--deep" aria-labelledby="book-t" data-open data-book3-sec>
   <div class="wrap book3">
-    <div class="book3__cover" data-tilt><div class="book3__obj" data-book3><picture><source type="image/avif" srcset="assets/media/book-cover-600.avif 600w, assets/media/book-cover-1200.avif 1200w" sizes="(max-width: 900px) 80vw, 460px"><img src="assets/media/book-cover-600.jpg" srcset="assets/media/book-cover-600.jpg 600w, assets/media/book-cover-1200.jpg 1200w" sizes="(max-width: 900px) 80vw, 460px" width="600" height="600" alt="Couverture du book de Cobalt Création" loading="lazy" decoding="async"></picture><span class="book3__edge" aria-hidden="true"></span></div></div>
+    <div class="book3__cover" data-tilt><div class="book3__obj" data-book3><picture><source type="image/avif" srcset="assets/media/book-cover-600.avif 600w, assets/media/book-cover-1200.avif 1200w" sizes="(max-width: 900px) 80vw, 460px"><img src="assets/media/book-cover-600.jpg" srcset="assets/media/book-cover-600.jpg 600w, assets/media/book-cover-1200.jpg 1200w" sizes="(max-width: 900px) 80vw, 460px" width="600" height="600" alt="Couverture du book de Cobalt Création" loading="lazy" decoding="async"></picture><span class="book3__sheen" aria-hidden="true" data-sheen></span><span class="book3__edge" aria-hidden="true"></span></div></div>
     <div data-settle>
       <h2 id="book-t" class="d2 split" style="margin-bottom:32px">{esc(h['book_title'])}</h2>
       <a class="btn3" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf">{esc(h['book_link'])}</a>
@@ -312,7 +319,8 @@ def build_rubric(slug):
         title += f"<em>{esc(h[1].capitalize())}</em>"
     banner = c.sharp_slides(slug, 1440, 620, 1)[0]
     fig = A.picture_wide(banner, b, "620px", alt="", eager=True, priority=True)
-    paras = "".join(f"<p>{esc(p)}</p>" for p in c.intro(slug))
+    ip = c.intro(slug)
+    paras = f'<p class="lightp" data-lightp>{esc(ip[0])}</p>' + "".join(f"<p>{esc(p)}</p>" for p in ip[1:])
     cells = []
     for i, w in enumerate(items):
         n = i + 1
@@ -345,18 +353,14 @@ def build_rubric(slug):
   <div class="sheet__grid">{''.join(cells)}</div>
 </section>
 {film}
-<a class="next3" href="{link(slug, NEXT[slug])}" data-open>
-  <span class="next3__media" aria-hidden="true">{A.picture_wide(c.sharp_slides(NEXT[slug], 1440, 720, 1)[0], b, "80vh", alt="", cls="next3__img")}</span>
-  <span class="next3__k">Rubrique suivante</span>
-  <span class="next3__t">{esc(LABEL[NEXT[slug]])}</span>
-</a>
-<section class="sec sec--deep cta3">
-  <div class="wrap" data-settle>
-    <h2 class="d2 split">Nous contacter</h2>
-    <div class="cta3__ways"><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></div>
-    <a class="link" href="{link(slug, 'contact-feedback')}">Formulaire de contact <span aria-hidden="true">&rarr;</span></a>
-  </div>
-</section>"""
+<div class="nx3" data-nx>
+  <a class="next3" href="{link(slug, NEXT[slug])}">
+    <span class="next3__media" aria-hidden="true" data-nx-media>{A.picture_wide(c.sharp_slides(NEXT[slug], 1440, 900, 1)[0], b, "100vh", alt="", cls="next3__img")}</span>
+    <span class="next3__line" aria-hidden="true" data-nx-line></span><span class="next3__line" aria-hidden="true" data-nx-line></span>
+    <span class="next3__k">Rubrique suivante</span>
+    <span class="next3__t">{esc(LABEL[NEXT[slug]])}</span>
+  </a>
+</div>"""
     page(slug, main, "p-rubric", viewer=True)
 
 
@@ -448,7 +452,7 @@ def main():
         shutil.copy2(c.MEDIA / "fonts" / src, fonts / dst)
     vendor = SITE / "assets/vendor"
     vendor.mkdir(parents=True, exist_ok=True)
-    for f in ("gsap.min.js", "ScrollTrigger.min.js"):
+    for f in ("gsap.min.js", "ScrollTrigger.min.js", "lenis.min.js", "LICENSE-lenis.txt"):
         shutil.copy2(c.MEDIA / "vendor" / f, vendor / f)
     c.write(SITE, "robots.txt", "User-agent: *\nDisallow: /\n")
     (SITE / ".nojekyll").write_text("")
