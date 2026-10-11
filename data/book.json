@@ -1,0 +1,342 @@
+[
+ {
+  "page": 1,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p01-560.jpg",
+    "avif": "book/p01-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p01-1120.jpg",
+    "avif": "book/p01-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 2,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p02-560.jpg",
+    "avif": "book/p02-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p02-1120.jpg",
+    "avif": "book/p02-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 3,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p03-560.jpg",
+    "avif": "book/p03-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p03-1120.jpg",
+    "avif": "book/p03-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 4,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p04-560.jpg",
+    "avif": "book/p04-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p04-1120.jpg",
+    "avif": "book/p04-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 7,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p07-560.jpg",
+    "avif": "book/p07-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p07-1120.jpg",
+    "avif": "book/p07-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 8,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p08-560.jpg",
+    "avif": "book/p08-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p08-1120.jpg",
+    "avif": "book/p08-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 10,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p10-560.jpg",
+    "avif": "book/p10-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p10-1120.jpg",
+    "avif": "book/p10-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 11,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p11-560.jpg",
+    "avif": "book/p11-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p11-1120.jpg",
+    "avif": "book/p11-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 20,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p20-560.jpg",
+    "avif": "book/p20-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p20-1120.jpg",
+    "avif": "book/p20-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 21,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p21-560.jpg",
+    "avif": "book/p21-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p21-1120.jpg",
+    "avif": "book/p21-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 22,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p22-560.jpg",
+    "avif": "book/p22-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p22-1120.jpg",
+    "avif": "book/p22-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 23,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p23-560.jpg",
+    "avif": "book/p23-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p23-1120.jpg",
+    "avif": "book/p23-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 28,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p28-560.jpg",
+    "avif": "book/p28-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p28-1120.jpg",
+    "avif": "book/p28-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 29,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p29-560.jpg",
+    "avif": "book/p29-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p29-1120.jpg",
+    "avif": "book/p29-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 31,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p31-560.jpg",
+    "avif": "book/p31-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p31-1120.jpg",
+    "avif": "book/p31-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 34,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p34-560.jpg",
+    "avif": "book/p34-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p34-1120.jpg",
+    "avif": "book/p34-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 43,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p43-560.jpg",
+    "avif": "book/p43-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p43-1120.jpg",
+    "avif": "book/p43-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 44,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p44-560.jpg",
+    "avif": "book/p44-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p44-1120.jpg",
+    "avif": "book/p44-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 45,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p45-560.jpg",
+    "avif": "book/p45-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p45-1120.jpg",
+    "avif": "book/p45-1120.avif"
+   }
+  ]
+ },
+ {
+  "page": 55,
+  "files": [
+   {
+    "w": 560,
+    "h": 560,
+    "jpg": "book/p55-560.jpg",
+    "avif": "book/p55-560.avif"
+   },
+   {
+    "w": 1120,
+    "h": 1120,
+    "jpg": "book/p55-1120.jpg",
+    "avif": "book/p55-1120.avif"
+   }
+  ]
+ }
+]

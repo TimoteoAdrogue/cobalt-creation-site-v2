@@ -81,3 +81,13 @@ Nothing was taken from V1 or invented.
   photograph takes its place (the home « Édition limitée - peinture » slide shows the full 3056 px Lalique
   photograph it was cropped from). Panoramas get derivatives tall enough for a full-height hero, and `sizes`
   states their real rendered width under `object-fit: cover`, so browsers fetch a sharp file.
+
+## Third pass (2026-10-11): V2 gets ideas of its own
+- **Opening (home, once per visit):** the house's own C (the logo's ink crescent and gold drop, cut from the
+  logotype at 12x) frames the first banner photograph on white, then opens to full screen. Decided before the
+  first paint (no flash), skipped with reduced motion.
+- **The book, leafed through:** 20 pages of the client's real book (their PDF: cover, contents, the four chapter
+  openers and spreads from each) turn in 3D with the scroll; the chapter name above the book follows the book's
+  own titles. Phones and reduced motion get a swipeable page strip. The PDF download stays.
+- **Typography:** Jost italic for the emphasis words of the main statements (same family, second voice).
+- Headings split into words for reveals stay fully readable by screen readers (both V2 and V3).

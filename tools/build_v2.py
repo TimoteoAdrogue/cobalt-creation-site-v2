@@ -18,6 +18,8 @@ STAGING = "https://timoteoadrogue.github.io/cobalt-creation-site-v2/"
 A = c.Assets(SITE)
 
 TITLES = {k: c.PAGES["pages"][k]["title"] for k in c.PAGES["pages"]}
+# decided before the first paint, so the opening never flashes the finished page first
+INTRO_SNIPPET = ";try{if(!sessionStorage.getItem('cc-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-opening')}catch(e){}"
 DESCS = {k: c.PAGES["pages"][k]["description"] for k in c.PAGES["pages"]}
 LABEL = dict(c.NAV)
 # Slide names as given by the client on the live home slideshow (aria-labels of its dots).
@@ -71,7 +73,7 @@ def head(slug):
 <link rel="apple-touch-icon" href="{b}assets/media/{A.file('apple-touch-icon.png')}">
 <link rel="preload" href="{b}assets/fonts/jost.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{b}assets/site.css">
-<script>document.documentElement.classList.add('js')</script>
+<script>document.documentElement.classList.add('js'){INTRO_SNIPPET if slug == "" else ""}</script>
 <script src="{b}assets/vendor/gsap.min.js" defer></script>
 <script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{b}assets/site.js" defer></script>
@@ -138,8 +140,13 @@ def hero(slug, title_html, sub_html, names=None):
         slides.append(f'<div class="sl{" is-on" if i == 0 else ""}" role="group" aria-roledescription="diapositive" aria-label="{i + 1} sur {len(banner)}"{name}>{pic}</div>')
         dots.append(f'<button class="bn__dot" type="button" aria-label="Image {i + 1} sur {len(banner)}"><span></span></button>')
     caption = f'<p class="hero__name" aria-live="off"><span data-slide-name>{esc(names[0])}</span></p>' if names else ""
-    return f"""<section class="hero" data-banner tabindex="0" aria-roledescription="carrousel" aria-label="Diaporama, défilement automatique toutes les 3 secondes">
+    intro = ""
+    if slug == "":
+        A.file("c-mask.png"); A.file("c-drop.png")
+        intro = ' data-intro'
+    return f"""<section class="hero" data-banner{intro} tabindex="0" aria-roledescription="carrousel" aria-label="Diaporama, défilement automatique toutes les 3 secondes">
   <div class="hero__slides" data-slides>{''.join(slides)}</div>
+  {'<div class="hero__drop" aria-hidden="true" data-drop></div>' if slug == "" else ""}
   <div class="hero__shade" aria-hidden="true"></div>
   <div class="hero__content wrap" data-hero-content>
     {title_html}
@@ -188,7 +195,7 @@ def build_home():
     ag = h["agence"]
     mission = ag[2]  # « Notre mission : donner de l’âme et de la couleur à vos ateliers de personnalisation, ... »
     hero_title = '<h1 class="hero__title"><span class="hero__kicker">Cobalt Création, Paris</span>' \
-                 f'{lines("Donner de l’âme et de la couleur à vos ateliers de personnalisation")}</h1>'
+                 '<span class="split">Donner de l’âme <em>et de la couleur</em> à vos ateliers de personnalisation</span></h1>'
     hero_sub = f'<p class="hero__sub reveal-soft">{esc(ag[0])}</p>'
     top = hero(slug, hero_title, hero_sub, HOME_SLIDE_NAMES)
 
@@ -197,7 +204,7 @@ def build_home():
   <div class="wrap manifest__in">
     <h2 id="agence-t" class="eyebrow">{esc(h['title'])}</h2>
     <p class="manifest__lit" data-lit>{words}</p>
-    <p class="manifest__mission" data-reveal>{esc(mission)}</p>
+    <p class="manifest__mission" data-reveal>{esc(mission).replace("donner de l’âme et de la couleur", "<em>donner de l’âme et de la couleur</em>", 1)}</p>
   </div>
 </section>"""
 
@@ -245,16 +252,37 @@ def build_home():
   </div>
 </section>"""
 
-    for f in ("book-cover-600.jpg", "book-cover-600.avif", "book-cover-1200.jpg", "book-cover-1200.avif", "cobalt-creation-book.pdf"):
-        A.file(f)
-    book = f"""<section class="book" aria-labelledby="book-t" data-book>
-  <div class="wrap book__in">
-    <div class="book__cover"><div class="book__obj" data-book-obj><picture><source type="image/avif" srcset="assets/media/book-cover-600.avif 600w, assets/media/book-cover-1200.avif 1200w" sizes="(max-width: 900px) 70vw, 440px"><img src="assets/media/book-cover-600.jpg" srcset="assets/media/book-cover-600.jpg 600w, assets/media/book-cover-1200.jpg 1200w" sizes="(max-width: 900px) 70vw, 440px" width="600" height="600" alt="Couverture du book de Cobalt Création" loading="lazy" decoding="async"></picture><span class="book__edge" aria-hidden="true"></span></div></div>
-    <div class="book__text">
+    # the client's own book, leafed through with the scroll (pages rendered from their PDF)
+    A.file("cobalt-creation-book.pdf")
+    bk = json.loads((c.DATA / "book.json").read_text())
+    def chapter(n):
+        return ("Animations points de ventes" if 3 <= n < 20 else "Commandes spéciales" if 20 <= n < 28 else
+                "Design graphique / Design papier" if 28 <= n < 43 else "Coffrets & packaging / GWP" if 43 <= n < 55 else "Le book")
+    def page_img(pg, eager=False):
+        fs = pg["files"]
+        for f in fs:
+            A.file(f["jpg"]); A.file(f["avif"])
+        avif = ", ".join(f"assets/media/{f['avif']} {f['w']}w" for f in fs)
+        jpg = ", ".join(f"assets/media/{f['jpg']} {f['w']}w" for f in fs)
+        return (f'<picture><source type="image/avif" srcset="{avif}" sizes="(max-width: 900px) 78vw, 560px">'
+                f'<img src="assets/media/{fs[0]["jpg"]}" srcset="{jpg}" sizes="(max-width: 900px) 78vw, 560px" width="{fs[0]["w"]}" height="{fs[0]["h"]}" '
+                f'alt="Le book de Cobalt Création, page {pg["page"]}" loading="{"eager" if eager else "lazy"}" decoding="async"></picture>')
+    leaves = []
+    for k in range(0, len(bk), 2):
+        front, back = bk[k], bk[k + 1]
+        leaves.append(f'<div class="fb__leaf" data-chapter="{esc(chapter(bk[k + 2]["page"]) if k + 2 < len(bk) else "Le book")}">'
+                      f'<div class="fb__face fb__front">{page_img(front, k == 0)}<span class="fb__sheen" aria-hidden="true"></span></div>'
+                      f'<div class="fb__face fb__back">{page_img(back)}<span class="fb__sheen" aria-hidden="true"></span></div></div>')
+    strip = "".join(f'<li>{page_img(pg)}</li>' for pg in bk)
+    book = f"""<section class="fb" aria-labelledby="book-t" data-fb>
+  <div class="fb__pin">
+    <div class="fb__head wrap">
       <h2 id="book-t" class="h-sec">{lines(h['book_title'])}</h2>
-      <a class="book__btn" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf"><span>{esc(h['book_link'])}</span><span aria-hidden="true">&darr;</span></a>
-      <span class="book__meta">PDF, {c.BOOK_SIZE}</span>
+      <p class="fb__chapter" aria-live="off"><span data-fb-chapter>Le book</span></p>
+      <div class="fb__dl"><a class="book__btn" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf"><span>{esc(h['book_link'])}</span><span aria-hidden="true">&darr;</span></a><span class="book__meta">PDF, {c.BOOK_SIZE}</span></div>
     </div>
+    <div class="fb__stage"><div class="fb__book" data-fb-book>{''.join(leaves)}</div></div>
+    <ul class="fb__strip" aria-label="Pages du book">{strip}</ul>
   </div>
 </section>"""
 
@@ -461,6 +489,7 @@ def main():
     fonts = SITE / "assets/fonts"
     fonts.mkdir(parents=True, exist_ok=True)
     shutil.copy2(c.MEDIA / "fonts/jost-normal.woff2", fonts / "jost.woff2")
+    shutil.copy2(c.MEDIA / "fonts/jost-italic.woff2", fonts / "jost-italic.woff2")
     shutil.copy2(c.MEDIA / "fonts/OFL-jost.txt", fonts / "OFL-jost.txt")
     vendor = SITE / "assets/vendor"
     vendor.mkdir(parents=True, exist_ok=True)

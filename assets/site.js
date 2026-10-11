@@ -13,11 +13,15 @@
   const desktop = () => matchMedia("(min-width: 901px)").matches;
 
   /* ---------- split words for mask reveals ---------- */
+  // words stay readable by screen readers (no aria-hidden); <em> survives as italic words
+  const safe = (w) => w.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   $$(".split").forEach((el) => {
-    const words = el.textContent.trim().split(/\s+/);
-    el.setAttribute("aria-label", el.textContent.trim());
-    const safe = (w) => w.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    el.innerHTML = words.map((w, i) => `<span class="sw" aria-hidden="true"><span class="sw__in" style="--w:${i}">${safe(w)}</span></span>`).join(" ");
+    const words = [];
+    el.childNodes.forEach((node) => {
+      const em = node.nodeType === 1 && node.tagName === "EM";
+      (node.textContent || "").split(/\s+/).filter(Boolean).forEach((w) => words.push({ w, em }));
+    });
+    el.innerHTML = words.map((o, i) => `<span class="sw"><span class="sw__in${o.em ? " is-em" : ""}" style="--w:${i}">${safe(o.w)}</span></span>`).join(" ");
   });
 
   /* ---------- reveals (IntersectionObserver; also catches content jumped past) ---------- */
@@ -71,7 +75,7 @@
     heroEl.style.setProperty("--bn-time", HOLD + "ms");
     let i = 0, timer = null, remaining = HOLD, startedAt = 0, busy = false;
     let userPaused = reduce, hovering = false, focused = false, visible = true;
-    const blocked = () => userPaused || hovering || focused || !visible || document.hidden || busy;
+    const blocked = () => userPaused || hovering || focused || !visible || document.hidden || busy || document.documentElement.classList.contains("is-opening");
     const activate = (k) => {
       dots.forEach((d, j) => { d.classList.remove("is-active"); d.setAttribute("aria-current", j === k ? "true" : "false"); });
       void heroEl.offsetWidth;
@@ -140,9 +144,42 @@
     if (reduce) heroEl.classList.add("is-static");
     activate(0);
     sync();
+    // opening: the house's C (logo crescent + gold drop) frames the first photograph, then opens to full screen
+    const rootEl = document.documentElement;
+    if (rootEl.classList.contains("is-opening") && !(G && heroEl.hasAttribute("data-intro"))) rootEl.classList.remove("is-opening");
+    if (rootEl.classList.contains("is-opening")) {
+      try { sessionStorage.setItem("cc-intro", "1"); } catch (e) {}
+      const M = { w: 2028, h: 2340, sx: 0.127, stem: 0.2135 };   // mask size, stem centre and stem thickness (fractions of width)
+      const title = $(".hero__title .split", heroEl);
+      title?.classList.remove("is-in");
+      const st = { e: 0, drop: 1 };
+      const apply = () => {
+        const vw = heroEl.clientWidth, vh = heroEl.clientHeight;
+        const h0 = Math.min(vh * 0.62, vw * 0.92 * M.h / M.w), w0 = h0 * M.w / M.h;
+        const w1 = (vw * 1.3) / M.stem, h1 = w1 * M.h / M.w;
+        const mh = h0 * Math.pow(h1 / h0, st.e), mw = mh * M.w / M.h;
+        const ax0 = vw / 2 - w0 / 2 + M.sx * w0, ay0 = vh / 2;
+        const ax = ax0 + (vw / 2 - ax0) * Math.min(1, st.e * 1.6), ay = ay0;
+        heroEl.style.setProperty("--mw", mw.toFixed(1) + "px"); heroEl.style.setProperty("--mh", mh.toFixed(1) + "px");
+        heroEl.style.setProperty("--mx", (ax - M.sx * mw).toFixed(1) + "px"); heroEl.style.setProperty("--my", (ay - 0.5 * mh).toFixed(1) + "px");
+        const drop = $("[data-drop]", heroEl); if (drop) drop.style.opacity = st.drop;
+      };
+      apply();
+      addEventListener("resize", apply);
+      G.timeline({ onUpdate: apply, onComplete: () => {
+        removeEventListener("resize", apply);
+        rootEl.classList.remove("is-opening");
+        ["--mw", "--mh", "--mx", "--my"].forEach((v) => heroEl.style.removeProperty(v));
+        requestAnimationFrame(() => title?.classList.add("is-in"));
+        sync();
+      } })
+        .to(st, { drop: 0, duration: 0.5, ease: "power2.in" }, 1.0)
+        .to(st, { e: 1, duration: 1.6, ease: "expo.inOut" }, 1.0);
+    }
     // the hero recedes as the page takes over
     if (G) {
-      G.to("[data-hero-content]", { yPercent: -18, opacity: 0, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "bottom 30%", scrub: true } });
+      // explicit start values: a .to() would capture whatever state the opening left (trap: start values are read at creation)
+      G.fromTo("[data-hero-content]", { yPercent: 0, opacity: 1 }, { yPercent: -18, opacity: 0, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "bottom 30%", scrub: true } });
       G.to("[data-slides]", { yPercent: 14, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "bottom top", scrub: true } });
     }
   }
@@ -182,6 +219,35 @@
         G.to(track, { x: () => -dist(), ease: "none", scrollTrigger: {
           trigger: hx, start: "top top", end: () => "+=" + dist(), pin: $(".hx__pin", hx), scrub: 0.6, invalidateOnRefresh: true,
           onUpdate: (s) => { if (bar) bar.style.transform = `scaleX(${s.progress})`; } } });
+      }
+
+      // the book: its real pages turn with the scroll, chapter by chapter
+      const fb = $("[data-fb]");
+      if (fb) {
+        const book = $("[data-fb-book]", fb), leaves = $$(".fb__leaf", book), N = leaves.length;
+        const chapEl = $("[data-fb-chapter]", fb);
+        let chap = chapEl ? chapEl.textContent : "";
+        const setChap = (t) => {
+          if (!chapEl || t === chap) return;
+          chap = t; chapEl.classList.add("is-swap");
+          setTimeout(() => { chapEl.textContent = t; chapEl.classList.remove("is-swap"); }, 280);
+        };
+        const render = (total) => {
+          leaves.forEach((lf, k) => {
+            const f = Math.min(Math.max(total - k, 0), 1), e = f * f * (3 - 2 * f);
+            lf.style.setProperty("--r", (-180 * e).toFixed(2) + "deg");
+            lf.style.setProperty("--shade", (Math.sin(e * Math.PI) * 0.85).toFixed(3));
+            lf.style.zIndex = f > 0 && f < 1 ? 300 : f >= 1 ? 100 + k : 100 - k;
+          });
+          const open = Math.min(Math.max(total, 0), 1), close = Math.min(Math.max(total - (N - 1), 0), 1);
+          book.style.transform = `translateX(calc(var(--pw) * ${(-0.5 * (1 - open) + 0.5 * close).toFixed(4)}))`;
+          book.style.setProperty("--spine", Math.min(open, 1 - close).toFixed(3));
+          const k = Math.round(total);
+          setChap(k <= 0 ? "Le book" : leaves[Math.min(k, N) - 1].dataset.chapter);
+        };
+        render(0);
+        window.ScrollTrigger.create({ trigger: fb, start: "top top", end: () => "+=" + Math.round(innerHeight * 0.55 * N), pin: $(".fb__pin", fb),
+          scrub: 0.6, invalidateOnRefresh: true, onUpdate: (s) => render(s.progress * N) });
       }
 
       // mosaic photographs drift inside their frames
