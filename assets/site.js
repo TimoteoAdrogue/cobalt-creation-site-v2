@@ -326,6 +326,9 @@
     });
 
     mm.add("(max-width: 900px)", () => {
+      // phones: each métier photograph opens out of its margins as it arrives
+      $$(".card__media").forEach((m) => G.fromTo(m, { clipPath: "inset(14% 9% 14% 9%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none",
+        scrollTrigger: { trigger: m, start: "top bottom", end: "top 30%", scrub: true } }));
       const media = $("[data-nx-media]");
       if (media) G.fromTo(media, { clipPath: "inset(9% 7% 9% 7%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none", scrollTrigger: { trigger: "[data-nx]", start: "top bottom", end: "top 20%", scrub: true } });
     });
@@ -393,6 +396,47 @@
     const fit = () => endPanel.classList.toggle("is-reveal", endPanel.offsetHeight < innerHeight * 0.92);
     fit();
     addEventListener("resize", fit);
+  }
+
+  /* ---------- page transition: an ink curtain closes over the page; the next page lifts it (CSS) ---------- */
+  if (!reduce) {
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest && e.target.closest("a[href]");
+      if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if ((a.target && a.target !== "_self") || a.hasAttribute("download")) return;
+      const url = new URL(a.href, location.href);
+      if (url.origin !== location.origin || !url.protocol.startsWith("http")) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;   // same page: anchors, works
+      e.preventDefault();
+      try { sessionStorage.setItem("cc-pt", "1"); } catch (err) {}
+      const pt = document.createElement("div");
+      pt.className = "pt"; pt.setAttribute("aria-hidden", "true");
+      document.body.appendChild(pt);
+      setTimeout(() => { location.href = url.href; }, 560);
+    });
+    // back/forward restores the page from memory with the curtain still drawn
+    addEventListener("pageshow", (e) => { if (e.persisted) $$(".pt").forEach((x) => x.remove()); });
+  }
+
+  /* ---------- a label follows the pointer over the works (fine pointers) ---------- */
+  if (!reduce && matchMedia("(pointer: fine)").matches) {
+    const tag = document.createElement("div");
+    tag.className = "cur"; tag.setAttribute("aria-hidden", "true"); tag.textContent = "Voir";
+    document.body.appendChild(tag);
+    root.classList.add("has-cur");
+    let x = 0, y = 0, tx = 0, ty = 0, on = false, raf = 0;
+    const loop = () => {
+      x += (tx - x) * 0.22; y += (ty - y) * 0.22;
+      tag.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
+      raf = on || Math.abs(tx - x) + Math.abs(ty - y) > 0.5 ? requestAnimationFrame(loop) : 0;
+    };
+    addEventListener("pointermove", (e) => {
+      tx = e.clientX; ty = e.clientY;
+      const hit = !!(e.target.closest && e.target.closest("[data-lb], .hx__item a, .card__media"));
+      if (hit && !on) { x = tx; y = ty; }
+      if (hit !== on) { on = hit; tag.classList.toggle("is-on", on); }
+      if (on && !raf) raf = requestAnimationFrame(loop);
+    }, { passive: true });
   }
 
   /* ---------- AVIF probe (neighbour preloading in the lightbox) ---------- */

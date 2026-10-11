@@ -17,6 +17,8 @@ DESCS = {k: c.PAGES["pages"][k]["description"] for k in c.PAGES["pages"]}
 LABEL = dict(c.NAV)
 NEXT = {"creation-d-objet-unique": "ateliers-de-personnalisation", "ateliers-de-personnalisation": "design-graphique-design-papier",
         "design-graphique-design-papier": "coffrets-packaging", "coffrets-packaging": "creation-d-objet-unique"}
+# page transition: decided before the first paint, from a flag set by the page we came from
+PT_SNIPPET = ";try{if(sessionStorage.getItem('cc-pt')){sessionStorage.removeItem('cc-pt');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('pt-in')}}catch(e){}"
 FINISHES = [("foil", "Marquage à chaud"), ("gravure", "Gravure"), ("emboss", "Embossage"), ("leaf", "Feuille d’or")]
 
 
@@ -59,7 +61,7 @@ def head(slug):
 <link rel="preload" href="{b}assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{b}assets/fonts/bodonimoda.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{b}assets/site.css">
-<script>document.documentElement.classList.add('js')</script>
+<script>document.documentElement.classList.add('js'){PT_SNIPPET}</script>
 <script src="{b}assets/vendor/gsap.min.js" defer></script>
 <script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{b}assets/vendor/lenis.min.js" defer></script>
@@ -296,7 +298,7 @@ def build_home():
     cols = []
     for g in groups:
         lis = "".join('<li><span class="crew__n">' + esc(p["name"]) + '</span><span class="crew__r">' + esc(c.typo(p["role"])) + "</span></li>" for p in g["people"])
-        cols.append(f'<div><h3>{esc(g["name"])}</h3><ul>{lis}</ul></div>')
+        cols.append(f'<div class="crew__g"><h3>{esc(g["name"])}</h3><ul>{lis}</ul></div>')
     crew_cols = "".join(cols)
     crew = f"""<section class="sec" aria-labelledby="crew-t">
   <div class="wrap">
@@ -366,21 +368,26 @@ def build_rubric(slug):
 
 def build_contact():
     slug = "contact-feedback"
+    b = base(slug)
     gs = []
     for g in c.team():
         ppl = "".join(
-            f'<div class="p3"><p class="p3__n">{esc(p["name"])}</p><p class="p3__r">{esc(c.typo(p["role"]))}</p><a href="mailto:{p["email"]}">{p["email"]}</a>'
-            + (f'<a href="tel:{c.tel(p["phone"])}">{esc(p["phone"])}</a>' if p["phone"] else "") + "</div>" for p in g["people"])
-        gs.append(f'<div class="team3__g" data-settle><h2>{esc(g["name"])}</h2><div class="team3__ppl">{ppl}</div></div>')
-    main = f"""<section class="ct3" aria-labelledby="ct-t">
-  <div class="wrap">
+            f'<li class="p3"><span class="p3__n">{esc(p["name"])}</span><span class="p3__r">{esc(c.typo(p["role"]))}</span><span class="p3__c"><a href="mailto:{p["email"]}">{p["email"]}</a>'
+            + (f'<a href="tel:{c.tel(p["phone"])}">{esc(p["phone"])}</a>' if p["phone"] else "") + "</span></li>" for p in g["people"])
+        gs.append(f'<div class="team3__g" data-settle><h3>{esc(g["name"])}</h3><ul class="team3__ppl">{ppl}</ul></div>')
+    cw = c.works("ateliers-de-personnalisation")[9]          # Guerlain, Xmas 2022, atelier retail France, gravure
+    cpic = A.picture(cw["media"], b, "(max-width: 900px) 100vw, 44vw", alt=c.work_alt(cw), cls="ctx3__img", eager=True, priority=True)
+    street, city = c.ADDRESS_LINE.split(" - ")
+    main = f"""<section class="ctx3" aria-labelledby="ct-t">
+  <figure class="ctx3__media">{cpic}<figcaption>{esc(" · ".join(c.work_lines(cw)))}</figcaption></figure>
+  <div class="ctx3__body">
     <h1 id="ct-t" class="d1 split">Nous contacter</h1>
     <div class="ct3__grid">
       <dl class="ways" data-settle>
         <div><dt>Téléphone</dt><dd><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a></dd></div>
         <div><dt>Email</dt><dd><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></dd></div>
         <div><dt>Instagram</dt><dd><a href="{c.INSTAGRAM}" rel="noopener" target="_blank">@cobaltcreation</a></dd></div>
-        <div><dt>Adresse</dt><dd>{esc(c.ADDRESS_LINE)}</dd></div>
+        <div><dt>Adresse</dt><dd>{esc(street)}<br>{esc(city)}</dd></div>
         <div><dt>Horaires</dt><dd>9h30 - 18h30</dd></div>
       </dl>
       <form class="f3" data-mailto="{c.EMAIL}" novalidate data-settle>
@@ -393,18 +400,18 @@ def build_contact():
     </div>
   </div>
 </section>
-<section class="sec" aria-label="L’équipe">
-  <div class="wrap team3">{''.join(gs)}</div>
-</section>
-<section aria-label="Plan d’accès" style="padding-bottom:clamp(72px,9vw,128px)">
+<section class="sec" aria-labelledby="team-t">
   <div class="wrap">
-    <div class="map3" data-map="{c.MAPS_EMBED}">
-      <div>
-        <p class="map3__addr">Agence Cobalt Création<br>{esc(c.ADDRESS_LINE)}</p>
-        <div class="map3__actions"><button class="btn3" type="button" data-map-load>Afficher la carte</button><a class="btn3" href="{c.MAPS_LINK}" rel="noopener" target="_blank">Ouvrir dans Google Maps</a></div>
-        <p class="note">La carte Google ne se charge qu’au clic.</p>
-      </div>
-    </div>
+    <div class="sec__head"><h2 id="team-t" class="d2 split">L’équipe</h2></div>
+    <div class="team3">{''.join(gs)}</div>
+  </div>
+</section>
+<section class="map3 sec--deep" aria-labelledby="map-t" data-map="{c.MAPS_EMBED}">
+  <div class="wrap">
+    <h2 class="kicker" id="map-t">Plan d’accès</h2>
+    <p class="map3__addr"><span class="split">Agence Cobalt Création</span><br><span class="split">{esc(street)}</span><br><em class="split">{esc(city)}</em></p>
+    <p class="map3__actions"><button class="link" type="button" data-map-load>Afficher la carte <span aria-hidden="true">&darr;</span></button><a class="link" href="{c.MAPS_LINK}" rel="noopener" target="_blank">Ouvrir dans Google Maps <span aria-hidden="true">&nearr;</span></a></p>
+    <p class="note">La carte Google ne se charge qu’au clic.</p>
   </div>
 </section>"""
     page(slug, main, "p-contact")

@@ -19,6 +19,7 @@ A = c.Assets(SITE)
 
 TITLES = {k: c.PAGES["pages"][k]["title"] for k in c.PAGES["pages"]}
 # decided before the first paint, so the opening never flashes the finished page first
+PT_SNIPPET = ";try{if(sessionStorage.getItem('cc-pt')){sessionStorage.removeItem('cc-pt');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('pt-in')}}catch(e){}"
 INTRO_SNIPPET = ";try{if(!sessionStorage.getItem('cc-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-opening')}catch(e){}"
 DESCS = {k: c.PAGES["pages"][k]["description"] for k in c.PAGES["pages"]}
 LABEL = dict(c.NAV)
@@ -73,7 +74,7 @@ def head(slug):
 <link rel="apple-touch-icon" href="{b}assets/media/{A.file('apple-touch-icon.png')}">
 <link rel="preload" href="{b}assets/fonts/jost.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{b}assets/site.css">
-<script>document.documentElement.classList.add('js'){INTRO_SNIPPET if slug == "" else ""}</script>
+<script>document.documentElement.classList.add('js'){PT_SNIPPET}{INTRO_SNIPPET if slug == "" else ""}</script>
 <script src="{b}assets/vendor/gsap.min.js" defer></script>
 <script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{b}assets/vendor/lenis.min.js" defer></script>
@@ -218,12 +219,13 @@ def build_home():
     big = esc(sentence).replace("en offrant des créations sur-mesure", "<em>en offrant des créations sur-mesure</em>", 1)
     frame = f"""<section class="frame" data-frame aria-labelledby="frame-t">
   <div class="frame__pin">
-    <div class="frame__media" data-frame-media>{A.picture_wide(fw["media"], b, "100vh", alt="", cls="frame__img")}<span class="frame__shade" aria-hidden="true"></span></div>
-    <div class="frame__text wrap">
-      <h2 class="frame__k" id="frame-t">{esc(kicker)}</h2>
-      <p class="frame__p split">{big}</p>
+    <div class="frame__media" data-frame-media>{A.picture_wide(fw["media"], b, "100vh", alt="", cls="frame__img")}<span class="frame__shade" aria-hidden="true"></span>
+      <div class="frame__text wrap">
+        <h2 class="frame__k" id="frame-t">{esc(kicker)}</h2>
+        <p class="frame__p split">{big}</p>
+      </div>
+      <p class="frame__cap wrap" aria-hidden="true">{esc(" · ".join(fl))}</p>
     </div>
-    <p class="frame__cap wrap" aria-hidden="true">{esc(" · ".join(fl))}</p>
   </div>
 </section>"""
 
@@ -250,7 +252,7 @@ def build_home():
     # pinned horizontal gallery: four works per rubric, in live order, linked to their page
     items = []
     for s in c.RUBRICS:
-        ws = [w for w in c.works(s) if c.work_lines(w)][:4]
+        ws = [w for w in c.works(s) if c.work_lines(w)][:3]
         for w in ws:
             n = c.works(s).index(w) + 1
             ln = c.work_lines(w)
@@ -430,24 +432,29 @@ def build_rubric(slug):
 
 def build_contact():
     slug = "contact-feedback"
+    b = base(slug)
     groups = c.team()
     gs = []
     for g in groups:
         ppl = []
         for p in g["people"]:
             ph = f'<a href="tel:{c.tel(p["phone"])}">{esc(p["phone"])}</a>' if p["phone"] else ""
-            ppl.append(f'<div class="person" data-reveal><p class="person__n">{esc(p["name"])}</p><p class="person__r">{esc(c.typo(p["role"]))}</p>'
-                       f'<a href="mailto:{p["email"]}">{p["email"]}</a>{ph}</div>')
-        gs.append(f'<div class="team__group"><h2 class="t-up" data-reveal>{esc(g["name"])}</h2><div class="team__people">{"".join(ppl)}</div></div>')
-    main = f"""<section class="ct-top" aria-labelledby="ct-t">
-  <div class="wrap">
-    <h1 id="ct-t" class="ct-title">{lines("Nous contacter")}</h1>
+            ppl.append(f'<li class="tp"><span class="tp__n">{esc(p["name"])}</span><span class="tp__r">{esc(c.typo(p["role"]))}</span>'
+                       f'<span class="tp__c"><a href="mailto:{p["email"]}">{p["email"]}</a>{ph}</span></li>')
+        gs.append(f'<div class="tg" data-reveal><h3 class="tg__n">{esc(g["name"])}</h3><ul class="tg__list">{"".join(ppl)}</ul></div>')
+    cw = c.works("ateliers-de-personnalisation")[5]          # Guerlain, Xmas 2024, atelier retail international
+    cpic = A.picture(cw["media"], b, "(max-width: 900px) 100vw, 44vw", alt=c.work_alt(cw), cls="ctx__img", eager=True, priority=True)
+    street, city = c.ADDRESS_LINE.split(" - ")
+    main = f"""<section class="ctx" aria-labelledby="ct-t">
+  <figure class="ctx__media">{cpic}<figcaption>{esc(" · ".join(c.work_lines(cw)))}</figcaption></figure>
+  <div class="ctx__body">
+    <h1 id="ct-t" class="ctx__title">{lines("Nous contacter")}</h1>
     <div class="ct-grid">
       <dl class="ct-ways" data-reveal>
         <div><dt>Téléphone</dt><dd><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a></dd></div>
         <div><dt>Email</dt><dd><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></dd></div>
         <div><dt>Instagram</dt><dd><a href="{c.INSTAGRAM}" rel="noopener" target="_blank">@cobaltcreation</a></dd></div>
-        <div><dt>Adresse</dt><dd>{esc(c.ADDRESS_LINE)}</dd></div>
+        <div><dt>Adresse</dt><dd>{esc(street)}<br>{esc(city)}</dd></div>
       </dl>
       <form class="form" data-mailto="{c.EMAIL}" novalidate data-reveal>
         <div class="field"><label for="f-nom">Nom</label><input id="f-nom" name="nom" autocomplete="family-name"><p class="field__err" aria-live="polite"></p></div>
@@ -459,18 +466,18 @@ def build_contact():
     </div>
   </div>
 </section>
-<section class="team" aria-label="L’équipe">
-  <div class="wrap">{''.join(gs)}</div>
-</section>
-<section class="map" aria-label="Plan d’accès">
+<section class="team" aria-labelledby="team-t">
   <div class="wrap">
-    <div class="map__frame" data-map="{c.MAPS_EMBED}" data-reveal>
-      <div class="map__inner">
-        <p class="map__addr">Agence Cobalt Création<br>{esc(c.ADDRESS_LINE)}</p>
-        <div class="map__actions"><button class="btn btn--ghost" type="button" data-map-load>Afficher la carte</button><a class="btn btn--ghost" href="{c.MAPS_LINK}" rel="noopener" target="_blank">Ouvrir dans Google Maps</a></div>
-        <p class="map__note">La carte Google ne se charge qu’au clic.</p>
-      </div>
-    </div>
+    <h2 class="team__t" id="team-t">{lines("L’équipe")}</h2>
+    {''.join(gs)}
+  </div>
+</section>
+<section class="mapx" aria-labelledby="map-t" data-map="{c.MAPS_EMBED}">
+  <div class="wrap mapx__in">
+    <h2 class="mapx__k" id="map-t">Plan d’accès</h2>
+    <p class="mapx__addr"><span class="split">Agence Cobalt Création</span><br><span class="split">{esc(street)}</span><br><span class="split">{esc(city)}</span></p>
+    <p class="mapx__actions"><button class="lnk" type="button" data-map-load>Afficher la carte <span aria-hidden="true">&darr;</span></button><a class="lnk" href="{c.MAPS_LINK}" rel="noopener" target="_blank">Ouvrir dans Google Maps <span aria-hidden="true">&nearr;</span></a></p>
+    <p class="mapx__note">La carte Google ne se charge qu’au clic.</p>
   </div>
 </section>"""
     page(slug, main, "p-contact", over_hero=False)

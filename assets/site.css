@@ -5,7 +5,6 @@
 @font-face { font-family: "Jost"; src: url("fonts/jost.woff2") format("woff2"); font-weight: 300 500; font-style: normal; font-display: swap; }
 @font-face { font-family: "Jost"; src: url("fonts/jost-italic.woff2") format("woff2"); font-weight: 300 500; font-style: italic; font-display: swap; }
 
-@view-transition { navigation: auto; }
 
 :root {
   --ink: #02374F;
@@ -384,13 +383,19 @@ html.lenis, html.lenis body { height: auto; }
   .lb__prev, .lb__next { top: 40%; }
 }
 
-/* ---------- contact ---------- */
-.ct-top { background: var(--mist); padding: clamp(64px, 8vw, 120px) 0; }
+/* ---------- contact: a photograph of an atelier beside the form ---------- */
+.ctx { display: grid; grid-template-columns: minmax(0, 44fr) minmax(0, 56fr); }
+.ctx__media { position: sticky; top: var(--hd); height: calc(100vh - var(--hd)); height: calc(100dvh - var(--hd)); margin: 0; overflow: hidden; background: var(--ink); }
+.ctx__img { width: 100%; height: 100%; object-fit: cover; }
+.ctx__media::after { content: ""; position: absolute; inset: 55% 0 0; background: linear-gradient(180deg, transparent, rgba(1, 26, 38, .72)); pointer-events: none; }
+.ctx__media figcaption { position: absolute; left: clamp(20px, 3vw, 40px); right: 20px; bottom: 24px; z-index: 1; font-size: 11.5px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: #fff; }
+.ctx__body { padding: clamp(56px, 9vh, 120px) clamp(28px, 6vw, 112px) clamp(72px, 11vh, 140px); }
+.ctx__title { font-size: clamp(44px, 6.6vw, 110px); font-weight: 300; text-transform: uppercase; letter-spacing: .02em; line-height: .96; margin-bottom: clamp(44px, 7vh, 84px); }
+.ctx .ct-grid { display: grid; gap: clamp(48px, 7vh, 80px); }
 .ct-title { font-size: clamp(40px, 7vw, 112px); font-weight: 300; text-transform: uppercase; letter-spacing: .03em; line-height: 1; margin-bottom: clamp(40px, 5vw, 72px); }
-.ct-grid { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: clamp(32px, 6vw, 96px); align-items: start; }
-.ct-ways { display: grid; gap: 28px; margin: 0; }
+.ct-ways { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 32px; margin: 0; }
 .ct-ways dt { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); margin-bottom: 6px; }
-.ct-ways dd { margin: 0; font-size: 19px; color: var(--ink); }
+.ct-ways dd { margin: 0; font-size: clamp(17px, 1.4vw, 21px); color: var(--ink); }
 .ct-ways a { text-decoration: none; background: linear-gradient(var(--gold), var(--gold)) no-repeat 0 100% / 100% 1px; padding-bottom: 2px; }
 .form { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 24px; }
 .field { display: grid; gap: 8px; }
@@ -409,21 +414,31 @@ html.lenis, html.lenis body { height: auto; }
 .btn--ghost { background: transparent; color: var(--ink); }
 .btn--ghost:hover { background: var(--ink); color: #fff; }
 .form__note { font-size: 13px; color: var(--mute); margin: 0; max-width: 44ch; }
-.team { padding: clamp(64px, 8vw, 112px) 0 clamp(40px, 5vw, 72px); }
-.team__group { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: 24px clamp(24px, 4vw, 64px); padding: 36px 0; border-top: 1px solid var(--line); }
-.team__group:last-child { border-bottom: 1px solid var(--line); }
-.team__group h2 { font-size: 13px; letter-spacing: .16em; color: var(--ink); padding-top: 4px; }
-.team__people { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 28px 32px; }
-.person__n { color: var(--ink); font-weight: 450; font-size: 17px; margin: 0; }
-.person__r { font-size: 14px; color: var(--mute); margin: 2px 0 10px; line-height: 1.5; }
-.person a { display: block; font-size: 14px; text-decoration: none; color: var(--text); width: fit-content; }
-.person a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 3px; }
-.map { padding-bottom: clamp(72px, 9vw, 120px); }
-.map__frame { position: relative; aspect-ratio: 21 / 8; min-height: 300px; background: var(--mist); display: grid; place-items: center; text-align: center; overflow: hidden; }
-.map__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.map__addr { font-size: 18px; color: var(--ink); margin-bottom: 22px; }
-.map__actions { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
-.map__note { font-size: 13px; color: var(--mute); margin-top: 18px; }
+/* team: an editorial list, one line per person */
+.team { padding: clamp(90px, 11vw, 170px) 0 clamp(70px, 9vw, 130px); }
+.team__t { font-size: clamp(34px, 4.4vw, 68px); font-weight: 300; text-transform: uppercase; letter-spacing: .04em; line-height: 1; margin-bottom: clamp(48px, 6vw, 88px); }
+.tg { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: 12px clamp(24px, 4vw, 64px); border-top: 1px solid var(--line); padding-top: 6px; margin-bottom: clamp(40px, 5vw, 72px); }
+.tg__n { font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--gold-ink); padding-top: 24px; }
+.tg__list { list-style: none; margin: 0; padding: 0; }
+.tp { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) auto; align-items: baseline; gap: 4px 28px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.tp:last-child { border-bottom: 0; }
+.tp__n { font-size: clamp(22px, 2.1vw, 32px); font-weight: 300; color: var(--ink); line-height: 1.2; transition: transform .7s var(--expo); }
+.tp:hover .tp__n { transform: translateX(12px); }
+.tp__r { font-size: 14px; color: var(--mute); line-height: 1.45; }
+.tp__c { display: grid; justify-items: end; gap: 2px; font-size: 14px; }
+.tp__c a { color: var(--text); text-decoration: none; }
+.tp__c a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 3px; }
+/* address band; the map takes its place on request */
+.mapx { position: relative; min-height: 66vh; display: grid; align-content: center; background: var(--cream); overflow: hidden; }
+.mapx__in { padding-block: clamp(90px, 11vw, 150px); }
+.mapx__k { font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: #7E6037; margin-bottom: 28px; }
+.mapx__addr { font-size: clamp(27px, 5.4vw, 88px); font-weight: 300; line-height: 1.04; text-transform: uppercase; letter-spacing: .02em; color: var(--ink); margin: 0 0 clamp(36px, 5vw, 56px); }
+.mapx__actions { display: flex; flex-wrap: wrap; gap: 14px 44px; margin: 0; }
+.lnk { display: inline-flex; gap: 12px; align-items: center; border: 0; padding: 8px 0; cursor: pointer; text-decoration: none; font-size: 12.5px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--ink);
+  background: linear-gradient(var(--gold), var(--gold)) no-repeat 0 100% / 100% 1px; transition: background-size .6s var(--expo); }
+.lnk:hover { background-size: 0 1px; background-position: 100% 100%; }
+.mapx__note { font-size: 13px; color: var(--mute); margin: 18px 0 0; }
+.mapx iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 /* ---------- legal ---------- */
 .legal { padding: clamp(56px, 7vw, 96px) 0 clamp(72px, 9vw, 120px); }
@@ -467,8 +482,12 @@ html.lenis, html.lenis body { height: auto; }
   .hx__bar { display: none; }
   .book__in { grid-template-columns: 1fr; text-align: center; }
   .book__obj { width: min(74%, 360px); margin-inline: auto; }
-  .ct-grid { grid-template-columns: 1fr; }
-  .team__group { grid-template-columns: 1fr; }
+  .ctx { grid-template-columns: 1fr; }
+  .ctx__media { position: relative; top: auto; height: 62vh; }
+  .ctx__body { padding: 48px var(--gut) 72px; }
+  .tg { grid-template-columns: 1fr; }
+  .tp { grid-template-columns: 1fr; }
+  .tp__c { justify-items: start; margin-top: 6px; }
   .ft__in { grid-template-columns: 1fr; text-align: left; }
 }
 @media (max-width: 767px) {
@@ -484,20 +503,35 @@ html.lenis, html.lenis body { height: auto; }
   .tile--video video { height: auto; aspect-ratio: 9 / 16; max-height: 80vh; margin-inline: auto; }
   .tile--cta { min-height: 240px; }
   .form { grid-template-columns: 1fr; }
-  .map__frame { aspect-ratio: 4 / 5; }
+  .ct-ways { grid-template-columns: 1fr; }
   .ft__addr span { display: block; }
   .ft__addr .ft__sep { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
-  @view-transition { navigation: none; }
 }
-::view-transition-old(root) { animation: vt-out .5s var(--ease) both; }
-::view-transition-new(root) { animation: vt-in .8s var(--expo) both; }
-@keyframes vt-out { to { opacity: 0; transform: translateY(-1.5%); } }
-@keyframes vt-in { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0); } }
-@media (prefers-reduced-motion: reduce) { ::view-transition-old(root), ::view-transition-new(root) { animation: none; } }
+
+/* ---------- page transition: an ink curtain with the house's mark closes, the next page lifts it ---------- */
+.pt, html.pt-in::after { position: fixed; inset: 0; z-index: 200; pointer-events: none;
+  background: var(--ink) url("media/logo-cobalt-creme.png") center / clamp(120px, 11vw, 170px) auto no-repeat; }
+.pt { clip-path: inset(100% 0 0 0); animation: pt-cover .6s var(--expo) forwards; }
+@keyframes pt-cover { to { clip-path: inset(0 0 0 0); } }
+html.pt-in::after { content: ""; animation: pt-lift .95s var(--expo) .2s forwards; }
+@keyframes pt-lift { to { clip-path: inset(0 0 100% 0); } }
+
+/* ---------- a label follows the pointer over the works ---------- */
+.cur { position: fixed; left: 0; top: 0; z-index: 90; width: 86px; height: 86px; margin: -43px 0 0 -43px; border-radius: 50%; display: grid; place-items: center; pointer-events: none;
+  background: var(--ink); color: var(--cream); font-size: 11px; font-weight: 500; letter-spacing: .2em; text-indent: .2em; text-transform: uppercase;
+  scale: 0; transition: scale .5s var(--expo); }
+.cur.is-on { scale: 1; }
+.has-cur [data-lb], .has-cur .hx__item a, .has-cur .card__media { cursor: none; }
+
+/* ---------- lightbox: the photograph opens from inside its frame ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .lb[open] .lb__stage picture img { animation: lb-img 1s var(--expo) both; }
+}
+@keyframes lb-img { from { clip-path: inset(7%); opacity: 0; } }
 
 /* ---------- opening: the house's C opens onto the first photograph ---------- */
 .is-opening .hero[data-intro] {

@@ -109,3 +109,19 @@ Feedback: the heroes were strong, but below them both sites read as ordinary pag
   assembles out of depth; a gold light crosses the book's cover; on rubric pages a gold light passes through the
   opening paragraph, and the next rubric is cut open by a gold line that parts like a slit.
 - The mission sentence in V2 is the live one, split at its own colon into a label and a statement.
+
+## Fifth pass (2026-10-11): the remaining plain parts
+- **Page transitions (both sites, every browser):** clicking an internal link closes the page under a curtain
+  (V2: ink with the house's mark; V3: a gold cut runs across and the page closes onto it), and the next page
+  opens from it. Decided before the first paint from a one-time session flag; the opening is pure CSS, so it
+  cannot leave a page covered if a script fails. Off with reduced motion. The Chrome-only cross-document fade
+  was removed so the two never stack.
+- **A "Voir" label follows the pointer over the works** (mouse and trackpad only; decorative, hidden from
+  assistive technology).
+- **Contact pages:** a photograph of one of the client's ateliers beside the details and the form (V2: Guerlain,
+  Xmas 2024; V3: Guerlain, Xmas 2022, both from their « Animations retail » works), the team as an editorial list
+  (one line per person), the address as a large band instead of a boxed panel.
+- **V3 home team:** one band per group with large serif names instead of five narrow columns.
+- **V2 works gallery:** three works per rubric instead of four (the horizontal run was about nine screens long).
+- **Phones:** métier and technique photographs open as they arrive; photographs in the viewers open from inside
+  their frame (V2) or from a slit (V3).
