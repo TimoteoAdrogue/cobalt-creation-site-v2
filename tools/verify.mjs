@@ -9,13 +9,14 @@ import { mkdirSync, writeFileSync } from "node:fs";
 const base = process.argv[2];
 const out = process.argv[3] || "compare";
 mkdirSync(out, { recursive: true });
-const PAGES = ["", "creation-d-objet-unique/", "ateliers-de-personnalisation/", "design-graphique-design-papier/",
+// PAGES=",contact-feedback/" (comma list, "" = home) and PORT override the defaults, for a quick re-check
+const PAGES = process.env.PAGES !== undefined ? process.env.PAGES.split(",") : ["", "creation-d-objet-unique/", "ateliers-de-personnalisation/", "design-graphique-design-papier/",
   "coffrets-packaging/", "contact-feedback/", "politique-de-confidentialite/"];
 const WIDTHS = [[1440, 900, false], [768, 1024, true], [390, 844, true]];
 const origin = new URL(base).origin;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const p = await launch({ port: 9334 });
+const p = await launch({ port: +(process.env.PORT || 9334) });
 const report = { base, pages: [], problems: [] };
 let errors = [], failed = [], third = [];
 p.on((m) => {
