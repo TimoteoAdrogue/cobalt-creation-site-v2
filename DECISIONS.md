@@ -125,3 +125,19 @@ Feedback: the heroes were strong, but below them both sites read as ordinary pag
 - **V2 works gallery:** three works per rubric instead of four (the horizontal run was about nine screens long).
 - **Phones:** métier and technique photographs open as they arrive; photographs in the viewers open from inside
   their frame (V2) or from a slit (V3).
+
+## Sixth pass (2026-10-25): no edge between scenes
+Feedback: every section boundary showed as a line, so the pages read as a stack of slides and the transitions felt
+less smooth (V3 most, V2 to a lesser degree).
+- **V3:** the sections no longer carry a ground of their own. One leather ground runs the whole page; its colour flows
+  from ink to deep ink as the scenes change and deepens to the end panel's colour before the page lifts off it, so no
+  boundary can show. The deep sections no longer open as framed cards. The hero's lower half dissolves into the ground
+  at the end of its story; the techniques photograph, once it has widened over the screen, dissolves upward into the
+  ground as the page moves on (during the exit, so no empty screen follows). Each section rises in slightly behind the
+  scroll and recedes (drifts up, dims) as the next one arrives. The next-rubric panel shows the page's ground too.
+- **V2:** the photograph washes out to paper from the bottom up while the manifesto rises into it as a mist (eased
+  ramps: a linear one shows a band where it ends); the sheet's shadow is gone. The métiers dissolve into each other
+  through a soft top edge instead of sliding over as cards that shrink; the covered panel darkens and its text drifts
+  away. The last métier holds, then dissolves into the cream of the works that follow (a cream run-out in the flow:
+  a margin would not hold it, sticky counts the margin).
+- Measured: 60 fps on both sites with wheel input (median 16.7 ms, p99 16.8 ms), all runtime and static checks pass.

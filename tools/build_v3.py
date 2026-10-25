@@ -253,7 +253,7 @@ def build_home():
             hidden = "" if s == default else " hidden"
             pic = A.picture(w["media"], b, "(max-width: 767px) 46vw, 30vw", alt=c.work_alt(w) or f"Réalisation {n}")
             cells.append(f'<figure class="rl" data-p="{s}"{hidden}><a href="{link(slug, s)}#piece-{c.works(s).index(w) + 1}" data-view=\'{esc(item_data(w, b, n))}\'>{pic}</a>{caption(w)}</figure>')
-    reals = f"""<section class="sec sec--deep reals" data-open aria-labelledby="reals-t">
+    reals = f"""<section class="sec sec--deep reals" aria-labelledby="reals-t">
   <div class="wrap">
     <div class="reals__head" data-settle>
       <h2 id="reals-t" class="split">Réalisations</h2>
@@ -283,7 +283,7 @@ def build_home():
 
     for f in ("book-cover-600.jpg", "book-cover-600.avif", "book-cover-1200.jpg", "book-cover-1200.avif", "cobalt-creation-book.pdf"):
         A.file(f)
-    book = f"""<section class="sec sec--deep" aria-labelledby="book-t" data-open data-book3-sec>
+    book = f"""<section class="sec sec--deep" aria-labelledby="book-t" data-book3-sec>
   <div class="wrap book3">
     <div class="book3__cover" data-tilt><div class="book3__obj" data-book3><picture><source type="image/avif" srcset="assets/media/book-cover-600.avif 600w, assets/media/book-cover-1200.avif 1200w" sizes="(max-width: 900px) 80vw, 460px"><img src="assets/media/book-cover-600.jpg" srcset="assets/media/book-cover-600.jpg 600w, assets/media/book-cover-1200.jpg 1200w" sizes="(max-width: 900px) 80vw, 460px" width="600" height="600" alt="Couverture du book de Cobalt Création" loading="lazy" decoding="async"></picture><span class="book3__sheen" aria-hidden="true" data-sheen></span><span class="book3__edge" aria-hidden="true"></span></div></div>
     <div data-settle>

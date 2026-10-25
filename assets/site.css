@@ -117,8 +117,13 @@ html.lenis, html.lenis body { height: auto; }
 
 /* ---------- F2 hero banner: full screen, live slides, right to left every 3 s ---------- */
 .hero { position: relative; height: 100vh; height: 100dvh; min-height: 560px; overflow: hidden; color: #fff; background: var(--ink); outline: none; --dim: 0; }
-.hero::after { content: ""; position: absolute; inset: 0; background: #011a26; opacity: var(--dim); pointer-events: none; }
-.manifest, .intro { position: relative; z-index: 2; background: var(--paper); box-shadow: 0 -30px 70px -30px rgba(1, 26, 38, .45); }
+/* the page after the hero has no top edge: the photograph washes out to paper from the bottom up (the top stays dark
+   under the white header) and the paper rises into it as a mist (--lead, set by the script once the visitor scrolls,
+   so the photograph is untouched at rest). Eased ramps: a linear one shows a band where it ends. */
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(255, 255, 255, 0) 15%, rgba(255, 255, 255, .5) 55%, var(--paper) 90%); opacity: var(--dim); pointer-events: none; }
+.manifest, .intro { position: relative; z-index: 2; background: var(--paper); }
+.manifest::before, .intro::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 55vh; pointer-events: none; opacity: var(--lead, 0);
+  background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, .05) 15%, rgba(255, 255, 255, .18) 30%, rgba(255, 255, 255, .4) 46%, rgba(255, 255, 255, .64) 62%, rgba(255, 255, 255, .85) 78%, rgba(255, 255, 255, .97) 92%, var(--paper)); }
 .hero__slides { position: absolute; inset: 0; touch-action: pan-y; cursor: grab; }
 .hero__slides:active { cursor: grabbing; }
 .sl { position: absolute; inset: 0; overflow: hidden; visibility: hidden; }
@@ -174,9 +179,16 @@ html.lenis, html.lenis body { height: auto; }
 .frame.is-live + .stack { margin-top: -100vh; }
 
 /* ---------- F3 métiers: stacking cards ---------- */
-.stack { position: relative; z-index: 3; background: var(--ink); }
-.card { position: sticky; top: 0; height: 100vh; height: 100dvh; min-height: 640px; }
+/* each panel dissolves in over the one before through a soft top edge (--f, 1 → 0 as it arrives), never a line;
+   the last one holds while it dissolves into the cream of the works that follow */
+.stack { position: relative; z-index: 3; }
+.card { position: sticky; top: 0; height: 100vh; height: 100dvh; min-height: 640px;
+  -webkit-mask-image: linear-gradient(transparent, #000 calc(var(--f, 0) * 75vh)); mask-image: linear-gradient(transparent, #000 calc(var(--f, 0) * 75vh)); }
 .card:not(:last-child) { margin-bottom: 50vh; }   /* each panel holds still for a moment before the next one covers it */
+.card:last-child .card__veil { background: var(--cream); }
+/* the hold: a cream run-out in the flow keeps the last panel stuck for 60vh (a margin would not: sticky counts it),
+   and, not being positioned, it stays beneath the panel instead of sliding over it */
+@media (min-width: 901px) { .stack::after { content: ""; display: block; height: 60vh; background: var(--cream); } }
 .card__in { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr); height: 100%; position: relative; background: var(--paper); transform-origin: 50% 40%; }
 .card:nth-child(even) .card__media { order: 2; }
 .card__media { display: block; overflow: hidden; background: var(--mist); }

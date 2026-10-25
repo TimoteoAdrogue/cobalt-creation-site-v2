@@ -203,6 +203,8 @@
     if (G) {
       // explicit start values: a .to() would capture whatever state the opening left (trap: start values are read at creation)
       G.fromTo("[data-hero-content]", { yPercent: 0, opacity: 1 }, { yPercent: -18, opacity: 0, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "bottom 30%", scrub: true } });
+      // the paper that follows rises into the photograph as a mist instead of meeting it at an edge
+      G.fromTo(".manifest, .intro", { "--lead": 0 }, { "--lead": 1, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "top -8%", scrub: true } });
       const span = { trigger: heroEl, start: "top top", end: "bottom top", scrub: true };
       G.matchMedia().add({ wide: "(min-width: 901px)", narrow: "(max-width: 900px)" }, (ctx) => {
         if (ctx.conditions.wide) {
@@ -253,13 +255,20 @@
     }
 
     mm.add("(min-width: 901px)", () => {
-      // métiers: full-screen panels; each settles back and darkens as the next one slides over it
+      // métiers: full-screen panels; each dissolves in over the one before (soft edge, no line), which darkens
+      // while its text drifts away; the last one holds and dissolves into the cream of the works that follow
       const cards = $$(".card");
       cards.forEach((card, k) => {
         G.fromTo($(".card__img", card), { scale: 1.24, yPercent: -5 }, { scale: 1, yPercent: 0, ease: "none", scrollTrigger: { trigger: card, start: "top bottom", end: "top top", scrub: true } });
-        if (k === cards.length - 1) return;
+        G.fromTo(card, { "--f": 1 }, { "--f": 0, ease: "none", scrollTrigger: { trigger: card, start: "top bottom", end: "top top", scrub: true } });
+        if (k === cards.length - 1) {
+          const stack = card.parentElement;
+          G.fromTo($(".card__veil", card), { opacity: 0 }, { opacity: 1, ease: "power1.in", scrollTrigger: { trigger: stack,
+            start: () => "bottom bottom+=" + innerHeight * 0.6, end: "bottom bottom", scrub: true, invalidateOnRefresh: true } });
+          return;
+        }
         const st = { trigger: cards[k + 1], start: "top bottom", end: "top top", scrub: true };
-        G.to($(".card__in", card), { scale: 0.88, ease: "none", scrollTrigger: st });
+        G.fromTo($(".card__text", card), { yPercent: 0, opacity: 1 }, { yPercent: -12, opacity: 0.2, ease: "none", scrollTrigger: st });
         G.to($(".card__veil", card), { opacity: 0.55, ease: "none", scrollTrigger: { ...st } });
       });
 
