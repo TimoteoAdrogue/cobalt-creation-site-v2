@@ -140,4 +140,7 @@ less smooth (V3 most, V2 to a lesser degree).
   through a soft top edge instead of sliding over as cards that shrink; the covered panel darkens and its text drifts
   away. The last métier holds, then dissolves into the cream of the works that follow (a cream run-out in the flow:
   a margin would not hold it, sticky counts the margin).
+- The last two photograph edges dissolve too: on V3's home the techniques block arrives through a soft top edge, and on
+  the rubric pages of both sites the closing "next rubric" photograph dissolves from the bottom as the page lifts off
+  the end panel.
 - Measured: 60 fps on both sites with wheel input (median 16.7 ms, p99 16.8 ms), all runtime and static checks pass.

@@ -361,6 +361,8 @@ html.lenis, html.lenis body { height: auto; }
 .nx { background: var(--ink); }
 .next { position: relative; display: grid; place-items: center; align-content: center; gap: 16px; height: 100vh; height: 100dvh; min-height: 520px; overflow: hidden; color: #fff; text-decoration: none; text-align: center; background: var(--ink); }
 .next__media { position: absolute; inset: 0; overflow: hidden; will-change: clip-path; }
+/* as the page lifts off the end panel, the bottom dissolves (--lift 0 → 1, set by the script; clear from the first pixel) */
+.next { -webkit-mask-image: linear-gradient(#000 calc(100% - var(--lift, 0) * 85vh), transparent 100%); mask-image: linear-gradient(#000 calc(100% - var(--lift, 0) * 85vh), transparent 100%); }
 .next__img { width: 100%; height: 100%; object-fit: cover; opacity: .55; transition: opacity 1s var(--ease); }
 .next:hover .next__img { opacity: .72; }
 .next:focus-visible { outline-color: #fff; outline-offset: -12px; }

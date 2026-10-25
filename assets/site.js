@@ -348,8 +348,10 @@
 
     // the end panel: its call-out rises out of the depth as the page lifts off it
     const endEl = $("[data-end]"), endIn = $("[data-end-in]");
-    if (endEl && endIn) G.fromTo(endIn, { yPercent: -35, scale: 0.94 }, { yPercent: 0, scale: 1, ease: "none",
-      scrollTrigger: { trigger: "main", start: "bottom bottom", end: () => `bottom ${innerHeight - endEl.offsetHeight}px`, scrub: true, invalidateOnRefresh: true } });
+    const lift = { trigger: "main", start: "bottom bottom", end: () => `bottom ${innerHeight - endEl.offsetHeight}px`, scrub: true, invalidateOnRefresh: true };
+    if (endEl && endIn) G.fromTo(endIn, { yPercent: -35, scale: 0.94 }, { yPercent: 0, scale: 1, ease: "none", scrollTrigger: lift });
+    // the photograph that closes a rubric dissolves from the bottom as the page lifts off, so no edge crosses the end panel
+    if (endEl && $(".next")) G.fromTo(".next", { "--lift": 0 }, { "--lift": 1, ease: "none", scrollTrigger: { ...lift } });
 
     // the logo marquee answers the scroll: faster with speed, reversing with direction
     const tracks = $$("[data-mq] .mq__track");
