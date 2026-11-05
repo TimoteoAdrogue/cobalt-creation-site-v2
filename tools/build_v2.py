@@ -301,7 +301,7 @@ def build_home():
             ln = c.work_lines(w)
             m = c.MEDIA_INDEX[w["media"]]
             ar = m["w"] / m["h"]
-            pic = A.picture(w["media"], b, f"(max-width: 900px) 78vw, calc(62vh * {ar * 1.16:.2f})", alt=c.work_alt(w), cls="hx__img")
+            pic = A.picture(w["media"], b, f"(max-width: 900px) 80vw, calc(62vh * {ar * 1.16:.2f})", alt=c.work_alt(w), cls="hx__img")
             items.append(f'<li class="hx__item" style="--ar:{ar:.3f}"><a href="{link(slug, s)}#piece-{n}"><span class="hx__frame">{pic}</span>'
                          f'<span class="hx__cap"><span class="hx__t">{esc(ln[0])}</span><span class="hx__s">{esc(" · ".join(ln[1:]))}</span>'
                          f'<span class="hx__r">{esc(LABEL[s])}</span></span></a></li>')
@@ -373,31 +373,79 @@ def build_home():
     page(slug, top + manifest + frame + metiers + works + trust + book, "p-home", end=contact_band(slug))
 
 
-def tile(w, n, b, cls):
+def work_bits(w, n, b):
+    """Caption lines, description, alt text and the lightbox data of one work."""
     lines_ = c.work_lines(w)
     desc = c.work_desc(w)
     alt = c.work_alt(w) or f"Réalisation {n}"
-    sizes = "(max-width: 767px) 92vw, 64vw" if cls == "s2" else "(max-width: 767px) 92vw, 32vw"
-    pic = A.picture(w["media"], b, sizes, alt=alt, cls="tile__img")
     full_jpg, full_avif = A.largest(w["media"], b)
     data = json.dumps({"t": lines_[0] if lines_ else "", "s": "\n".join(lines_[1:]), "d": desc,
                        "jpg": full_jpg, "avif": full_avif, "alt": alt}, ensure_ascii=False)
-    cap = ""
+    meta = ""
     if lines_ or desc:
-        cap = (f'<figcaption class="tile__cap"><span class="tile__t">{esc(lines_[0] if lines_ else "")}</span>'
-               f'<span class="tile__s">{esc(" · ".join(lines_[1:]))}</span><span class="tile__d">{esc(desc)}</span></figcaption>')
+        meta = (f'<span class="tile__t">{esc(lines_[0] if lines_ else "")}</span>'
+                f'<span class="tile__s">{esc(" · ".join(lines_[1:]))}</span><span class="tile__d">{esc(desc)}</span>')
+    return alt, data, meta
+
+
+def tile(w, n, b, cls):
+    """A mosaic work: the photograph, then its caption, always visible (the description shows on hover)."""
+    alt, data, meta = work_bits(w, n, b)
+    sizes = "(max-width: 767px) 100vw, 64vw" if cls in ("s2", "s3") else "(max-width: 767px) 72vw, 32vw"
+    pic = A.picture(w["media"], b, sizes, alt=alt, cls="tile__img")
+    cap = f'<figcaption class="tile__meta">{meta}</figcaption>' if meta else ""
     return (f'<figure class="tile {cls}" id="piece-{n}" data-wipe>'
             f'<a class="tile__link" href="#piece-{n}" data-lb="{n}" data-item=\'{esc(data)}\' aria-label="Agrandir : {esc(alt)}">{pic}</a>{cap}</figure>')
 
 
+def plate(w, n, b):
+    """A work given a whole screen: at the viewport's height, at its own proportions, its caption in the margin."""
+    alt, data, meta = work_bits(w, n, b)
+    m = c.MEDIA_INDEX[w["media"]]
+    ar = m["w"] / m["h"]
+    pic = vpic(w["media"], b, f"(max-width: 767px) 100vw, calc(86vh * {ar:.3f})", (round(1900 * ar),), cls="plate__img", alt=alt)
+    cap = f'<figcaption class="plate__meta tile__meta">{meta}</figcaption>' if meta else ""
+    return (f'<figure class="plate" id="piece-{n}" style="--ar:{ar:.3f}" data-plate>'
+            f'<a class="plate__link" href="#piece-{n}" data-lb="{n}" data-item=\'{esc(data)}\' aria-label="Agrandir : {esc(alt)}">{pic}</a>{cap}</figure>')
+
+
+def plate_ok(w):
+    """Square or portrait, and tall enough to fill 86vh on a retina screen without being stretched."""
+    m = c.MEDIA_INDEX[w["media"]]
+    return m["w"] / m["h"] <= 1.05 and m["h"] >= 1800
+
+
+def segments(g):
+    """Pace a gallery: a plate opens it (when long) and returns after every four works or more, never as one of its
+    last two; the works between them form the 1/3 + 2/3 mosaic."""
+    out, run = [], []
+    for i, w in enumerate(g):
+        start = not out and not run and len(g) >= 8
+        if plate_ok(w) and len(g) - i - 1 >= 2 and (start or len(run) >= 4):
+            if run:
+                out.append(("tiles", run))
+            out.append(("plate", [w]))
+            run = []
+        else:
+            run.append(w)
+    if run:
+        out.append(("tiles", run))
+    return out
+
+
 def mosaic_cells(items, start, b):
-    cells = []
-    for i, w in enumerate(items):
+    """1/3 + 2/3 pairs, alternating sides; an odd run ends on a row of three thirds."""
+    n = len(items)
+    if n == 1:
+        return [tile(items[0], start, b, "s3")]
+    pairs = n if n % 2 == 0 else n - 3
+    cls = []
+    for i in range(pairs):
         pair, first = divmod(i, 2)
         big_first = pair % 2 == 1
-        cls = ("s2" if first == 0 else "s1") if big_first else ("s1" if first == 0 else "s2")
-        cells.append(tile(w, start + i, b, cls))
-    return cells
+        cls.append(("s2" if first == 0 else "s1") if big_first else ("s1" if first == 0 else "s2"))
+    cls += ["s1"] * (n - pairs)
+    return [tile(w, start + i, b, k) for i, (w, k) in enumerate(zip(items, cls))]
 
 
 def build_rubric(slug):
@@ -418,14 +466,12 @@ def build_rubric(slug):
             blocks.append(f'<div class="mosaic mosaic--tall">{video}{tile(g[0], n, b, "s2")}</div>')
             n += 1
             continue
-        cells = mosaic_cells(g, n, b)
-        if len(g) % 2 == 1:
-            lone_big = (len(g) // 2) % 2 == 1
-            cta = (f'<div class="tile tile--cta {"s1" if lone_big else "s2"}" data-wipe><h2 class="t-up">Nous contacter</h2>'
-                   f'<p><a href="tel:{c.tel(c.PHONE)}">{esc(c.PHONE)}</a></p><p><a href="mailto:{c.EMAIL}">{c.EMAIL}</a></p></div>')
-            cells.append(cta)
-        blocks.append(f'<div class="mosaic">{"".join(cells)}</div>')
-        n += len(g)
+        for kind, ws in segments(g):
+            if kind == "plate":
+                blocks.append(plate(ws[0], n, b))
+            else:
+                blocks.append(f'<div class="mosaic">{"".join(mosaic_cells(ws, n, b))}</div>')
+            n += len(ws)
     film = ""
     if slug == "ateliers-de-personnalisation":
         A.file("givenchy-film-1280.jpg"); A.file("givenchy-film-1280.avif")

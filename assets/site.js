@@ -339,6 +339,14 @@
         onUpdate() { media.parentElement.classList.toggle("is-closed", this.progress() < 0.995); } });
     });
 
+    // plates: the work opens from a frame to its full size as it rises (all widths)
+    $$("[data-plate]").forEach((pl) => {
+      const lk = $(".plate__link", pl);
+      G.timeline({ scrollTrigger: { trigger: pl, start: "top bottom", end: "top 12%", scrub: 0.6 } })
+        .fromTo(lk, { clipPath: "inset(10% 14% 10% 14%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "power2.out" }, 0)
+        .fromTo($("img", lk), { scale: 1.1 }, { scale: 1, ease: "power2.out" }, 0);
+    });
+
     // the two logo rows slide in from opposite sides
     $$("[data-mq] .mq__row").forEach((row, k) => G.fromTo(row, { xPercent: k ? 14 : -14 }, { xPercent: 0, ease: "none",
       scrollTrigger: { trigger: "[data-mq]", start: "top bottom", end: "center 55%", scrub: true } }));
