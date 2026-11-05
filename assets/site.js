@@ -36,7 +36,7 @@
   });
 
   /* ---------- reveals (IntersectionObserver; also catches content jumped past) ---------- */
-  const revealEls = $$("[data-reveal], [data-wipe], .split, .reveal-soft").filter((el) => !(G && desktop() && el.closest("[data-frame]")));
+  const revealEls = $$("[data-reveal], [data-wipe], .split, .reveal-soft").filter((el) => !(G && desktop() && el.closest("[data-frame]")) && !(G && el.closest("[data-end-in]")));
   if (io && !reduce) {
     const o = new IntersectionObserver((es) => {
       for (const e of es) if (e.isIntersecting || e.boundingClientRect.top <= 0) { e.target.classList.add("is-in"); o.unobserve(e.target); }
@@ -56,7 +56,7 @@
   const afterHero = heroEl && heroEl.nextElementSibling;
   if (hd && heroEl && G && afterHero) {
     // the hero is pinned under the next sheet, so it never leaves the screen: follow the sheet instead
-    window.ScrollTrigger.create({ trigger: afterHero, start: () => `top ${hd.offsetHeight}px`, end: "max",
+    window.ScrollTrigger.create({ trigger: afterHero, start: () => `top ${hd.offsetHeight + innerHeight * 0.35}px`, end: "max", invalidateOnRefresh: true,
       onEnter: () => hd.classList.remove("is-over"), onLeaveBack: () => hd.classList.add("is-over") });
   } else if (hd && heroEl && io) {
     new IntersectionObserver(([e]) => hd.classList.toggle("is-over", e.isIntersecting), { rootMargin: "-76px 0px 0px 0px", threshold: 0 }).observe(heroEl);
@@ -202,16 +202,19 @@
     // the hero recedes as the page takes over
     if (G) {
       // explicit start values: a .to() would capture whatever state the opening left (trap: start values are read at creation)
-      G.fromTo("[data-hero-content]", { yPercent: 0, opacity: 1 }, { yPercent: -18, opacity: 0, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "bottom 30%", scrub: true } });
-      // the paper that follows rises into the photograph as a mist instead of meeting it at an edge
-      G.fromTo(".manifest, .intro", { "--lead": 0 }, { "--lead": 1, ease: "none", scrollTrigger: { trigger: heroEl, start: "top top", end: "top -8%", scrub: true } });
-      const span = { trigger: heroEl, start: "top top", end: "bottom top", scrub: true };
+      // numeric bounds: the hero sits at the top of the page, and a trigger made after its pin would be offset by it
+      const span = { start: 0, end: () => heroEl.offsetHeight, scrub: true, invalidateOnRefresh: true };
+      G.fromTo("[data-hero-content]", { yPercent: 0, opacity: 1 }, { yPercent: -18, opacity: 0, ease: "none", scrollTrigger: { ...span, end: () => heroEl.offsetHeight * 0.35 } });
+      // the ground that follows rises into the photograph as a mist instead of meeting it at an edge
+      G.fromTo(".manifest, .intro", { "--lead": 0 }, { "--lead": 1, ease: "none", scrollTrigger: { ...span, end: () => innerHeight * 0.45 } });
       G.matchMedia().add({ wide: "(min-width: 901px)", narrow: "(max-width: 900px)" }, (ctx) => {
         if (ctx.conditions.wide) {
-          // the next section slides over the hero like a sheet; the photograph pushes in and darkens beneath it
-          window.ScrollTrigger.create({ trigger: heroEl, start: "top top", end: "bottom top", pin: true, pinSpacing: false });
+          // the next section slides over the hero like a sheet; the photograph pushes in and deepens toward ink beneath it.
+          // Once covered it is no longer painted (it stays translated under the page and would show through gaps).
+          window.ScrollTrigger.create({ trigger: heroEl, start: "top top", end: "bottom top", pin: true, pinSpacing: false,
+            onLeave: () => { heroEl.style.visibility = "hidden"; }, onEnterBack: () => { heroEl.style.visibility = ""; } });
           G.fromTo("[data-slides]", { scale: 1 }, { scale: 1.09, ease: "none", scrollTrigger: { ...span } });
-          G.fromTo(heroEl, { "--dim": 0 }, { "--dim": 0.66, ease: "none", scrollTrigger: { ...span } });
+          G.fromTo(heroEl, { "--dim": 0 }, { "--dim": 1, ease: "none", scrollTrigger: { ...span } });
         } else G.fromTo("[data-slides]", { yPercent: 0 }, { yPercent: 14, ease: "none", scrollTrigger: { ...span } });
       });
     }
@@ -261,26 +264,18 @@
       cards.forEach((card, k) => {
         G.fromTo($(".card__img", card), { scale: 1.24, yPercent: -5 }, { scale: 1, yPercent: 0, ease: "none", scrollTrigger: { trigger: card, start: "top bottom", end: "top top", scrub: true } });
         G.fromTo(card, { "--f": 1 }, { "--f": 0, ease: "none", scrollTrigger: { trigger: card, start: "top bottom", end: "top top", scrub: true } });
-        if (k === cards.length - 1) {
-          const stack = card.parentElement;
-          G.fromTo($(".card__veil", card), { opacity: 0 }, { opacity: 1, ease: "power1.in", scrollTrigger: { trigger: stack,
-            start: () => "bottom bottom+=" + innerHeight * 0.6, end: "bottom bottom", scrub: true, invalidateOnRefresh: true } });
-          return;
-        }
+        if (k === cards.length - 1) return;
         const st = { trigger: cards[k + 1], start: "top bottom", end: "top top", scrub: true };
         G.fromTo($(".card__text", card), { yPercent: 0, opacity: 1 }, { yPercent: -12, opacity: 0.2, ease: "none", scrollTrigger: st });
-        G.to($(".card__veil", card), { opacity: 0.55, ease: "none", scrollTrigger: { ...st } });
       });
 
       // pinned horizontal gallery: the title drifts behind, each photograph slides inside its frame
       const hx = $("[data-hx]");
       if (hx) {
-        const track = $("[data-hx-track]", hx), bar = $("[data-hx-bar]", hx), ghost = $("[data-hx-ghost]", hx);
+        const track = $("[data-hx-track]", hx);
         const dist = () => Math.max(0, track.scrollWidth - innerWidth);
         const run = G.to(track, { x: () => -dist(), ease: "none", scrollTrigger: {
-          trigger: hx, start: "top top", end: () => "+=" + dist(), pin: $(".hx__pin", hx), scrub: 0.6, invalidateOnRefresh: true,
-          onUpdate: (s) => { if (bar) bar.style.transform = `scaleX(${s.progress})`; } } });
-        if (ghost) G.fromTo(ghost, { xPercent: 4 }, { xPercent: -42, ease: "none", scrollTrigger: { trigger: hx, start: "top bottom", end: () => "+=" + (dist() + innerHeight), scrub: 0.6, invalidateOnRefresh: true } });
+          trigger: hx, start: "top top", end: () => "+=" + dist(), pin: $(".hx__pin", hx), scrub: 0.6, invalidateOnRefresh: true } });
         $$(".hx__img", track).forEach((img) => G.fromTo(img, { xPercent: 6 }, { xPercent: -6, ease: "none",
           scrollTrigger: { trigger: img.closest(".hx__item"), containerAnimation: run, start: "left right", end: "right left", scrub: true } }));
         G.fromTo($$(".hx__item", track).slice(0, 5), { y: 90 }, { y: 0, ease: "none", stagger: 0.08, scrollTrigger: { trigger: hx, start: "top bottom", end: "top top", scrub: true } });
@@ -322,10 +317,12 @@
       const nx = $("[data-nx]");
       if (nx) {
         const media = $("[data-nx-media]", nx);
-        G.timeline({ defaults: { ease: "power2.inOut" }, scrollTrigger: { trigger: nx, start: "top top", end: () => "+=" + innerHeight * 0.9, pin: $(".next", nx), scrub: 0.7 } })
-          .fromTo(media, { clipPath: "inset(20% 28% 20% 28%)" }, { clipPath: "inset(0% 0% 0% 0%)" }, 0)
-          .fromTo($("img", media), { scale: 1.35 }, { scale: 1 }, 0)
-          .fromTo($(".next__t", nx), { scale: 0.8 }, { scale: 1 }, 0);
+        const nextEl = $(".next", nx);
+        G.timeline({ defaults: { ease: "power2.out" }, scrollTrigger: { trigger: nx, start: "top bottom", end: "top top", scrub: 0.7 },
+          onUpdate() { nextEl.classList.toggle("is-closed", this.progress() < 0.995); } })
+          .fromTo(media, { clipPath: "inset(14% 18% 14% 18%)" }, { clipPath: "inset(0% 0% 0% 0%)" }, 0)
+          .fromTo($("img", media), { scale: 1.12 }, { scale: 1 }, 0);
+        ST.create({ trigger: nx, start: "top top", end: () => "+=" + innerHeight * 0.6, pin: $(".next", nx) });
       }
 
       // mosaic photographs drift inside their frames
@@ -339,7 +336,8 @@
       $$(".card__media").forEach((m) => G.fromTo(m, { clipPath: "inset(14% 9% 14% 9%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none",
         scrollTrigger: { trigger: m, start: "top bottom", end: "top 30%", scrub: true } }));
       const media = $("[data-nx-media]");
-      if (media) G.fromTo(media, { clipPath: "inset(9% 7% 9% 7%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none", scrollTrigger: { trigger: "[data-nx]", start: "top bottom", end: "top 20%", scrub: true } });
+      if (media) G.fromTo(media, { clipPath: "inset(9% 7% 9% 7%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none", scrollTrigger: { trigger: "[data-nx]", start: "top bottom", end: "top 20%", scrub: true },
+        onUpdate() { media.parentElement.classList.toggle("is-closed", this.progress() < 0.995); } });
     });
 
     // the two logo rows slide in from opposite sides
@@ -349,7 +347,13 @@
     // the end panel: its call-out rises out of the depth as the page lifts off it
     const endEl = $("[data-end]"), endIn = $("[data-end-in]");
     const lift = { trigger: "main", start: "bottom bottom", end: () => `bottom ${innerHeight - endEl.offsetHeight}px`, scrub: true, invalidateOnRefresh: true };
-    if (endEl && endIn) G.fromTo(endIn, { yPercent: -35, scale: 0.94 }, { yPercent: 0, scale: 1, ease: "none", scrollTrigger: lift });
+    const callSplit = endIn && $(".split", endIn);
+    if (endEl && callSplit) {
+      // y of the call-out's top when the panel is stuck under the page, or 90 % of the screen when it is in the flow
+      const at = () => endEl.classList.contains("is-reveal") ? innerHeight - endEl.offsetHeight + endIn.offsetTop - 8 : innerHeight * 0.9 - endIn.offsetTop;
+      ST.create({ trigger: "main", start: () => `bottom ${Math.round(at())}px`, end: "max", invalidateOnRefresh: true,
+        onEnter: () => { callSplit.classList.add("is-in"); endIn.classList.add("is-on"); }, onLeaveBack: () => { callSplit.classList.remove("is-in"); endIn.classList.remove("is-on"); } });
+    }
     // the photograph that closes a rubric dissolves from the bottom as the page lifts off, so no edge crosses the end panel
     if (endEl && $(".next")) G.fromTo(".next", { "--lift": 0 }, { "--lift": 1, ease: "none", scrollTrigger: { ...lift } });
 
@@ -370,35 +374,6 @@
     // images and fonts change heights: measure again once they are in
     addEventListener("load", () => ST.refresh());
     document.fonts?.ready.then(() => ST.refresh());
-  }
-
-  /* ---------- scenes: the ground colour flows from one section into the next ---------- */
-  // Each [data-scene] section keeps its own colour at rest (so it reads correctly without script);
-  // while the next one arrives, both take the same in-between colour, so the whole screen changes at once.
-  const scenes = $$("[data-scene]");
-  if (scenes.length && !reduce) {
-    const RGB = { paper: [255, 255, 255], cream: [243, 238, 228], ink: [2, 55, 79] };
-    const linked = scenes.map((el, i) => i > 0 && scenes[i - 1] === el.previousElementSibling);
-    const mix = (a, b, k) => a.map((v, j) => v + (b[j] - v) * k);
-    const last = new Map();
-    const paint = () => {
-      const vh = innerHeight;
-      const rects = scenes.map((el) => el.getBoundingClientRect());
-      const k = (i) => Math.min(1, Math.max(0, (vh * 0.85 - rects[i].top) / (vh * 0.55)));
-      scenes.forEach((el, i) => {
-        const own = RGB[el.dataset.scene];
-        let col = own;
-        if (rects[i].bottom > 0 && rects[i].top < vh) {
-          if (linked[i] && k(i) < 1) col = mix(RGB[scenes[i - 1].dataset.scene], own, k(i));
-          if (linked[i + 1] && k(i + 1) > 0) col = mix(own, RGB[scenes[i + 1].dataset.scene], k(i + 1));
-        }
-        const css = `rgb(${col.map(Math.round).join(",")})`;
-        if (last.get(el) !== css) { el.style.backgroundColor = css; last.set(el, css); }
-      });
-    };
-    addEventListener("scroll", paint, { passive: true });
-    addEventListener("resize", paint);
-    paint();
   }
 
   /* ---------- end panel: revealed from under the page when it fits on screen ---------- */
@@ -427,27 +402,6 @@
     });
     // back/forward restores the page from memory with the curtain still drawn
     addEventListener("pageshow", (e) => { if (e.persisted) $$(".pt").forEach((x) => x.remove()); });
-  }
-
-  /* ---------- a label follows the pointer over the works (fine pointers) ---------- */
-  if (!reduce && matchMedia("(pointer: fine)").matches) {
-    const tag = document.createElement("div");
-    tag.className = "cur"; tag.setAttribute("aria-hidden", "true"); tag.textContent = "Voir";
-    document.body.appendChild(tag);
-    root.classList.add("has-cur");
-    let x = 0, y = 0, tx = 0, ty = 0, on = false, raf = 0;
-    const loop = () => {
-      x += (tx - x) * 0.22; y += (ty - y) * 0.22;
-      tag.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
-      raf = on || Math.abs(tx - x) + Math.abs(ty - y) > 0.5 ? requestAnimationFrame(loop) : 0;
-    };
-    addEventListener("pointermove", (e) => {
-      tx = e.clientX; ty = e.clientY;
-      const hit = !!(e.target.closest && e.target.closest("[data-lb], .hx__item a, .card__media"));
-      if (hit && !on) { x = tx; y = ty; }
-      if (hit !== on) { on = hit; tag.classList.toggle("is-on", on); }
-      if (on && !raf) raf = requestAnimationFrame(loop);
-    }, { passive: true });
   }
 
   /* ---------- AVIF probe (neighbour preloading in the lightbox) ---------- */

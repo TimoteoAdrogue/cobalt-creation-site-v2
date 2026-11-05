@@ -263,15 +263,13 @@ def build_home():
                          f'<span class="hx__cap"><span class="hx__t">{esc(ln[0])}</span><span class="hx__s">{esc(" · ".join(ln[1:]))}</span>'
                          f'<span class="hx__r">{esc(LABEL[s])}</span></span></a></li>')
     rubric_links = "".join(f'<li><a href="{link(slug, s)}">{esc(LABEL[s])}</a></li>' for s in c.RUBRICS)
-    works = f"""<section class="hx" aria-labelledby="hx-t" data-hx data-scene="cream">
+    works = f"""<section class="hx" aria-labelledby="hx-t" data-hx>
   <div class="hx__pin">
-    <span class="hx__ghost" aria-hidden="true" data-hx-ghost>Réalisations</span>
     <div class="hx__head wrap">
       <h2 id="hx-t" class="h-sec">Réalisations</h2>
       <ul class="hx__rubrics">{rubric_links}</ul>
     </div>
     <div class="hx__viewport"><ul class="hx__track" data-hx-track>{''.join(items)}</ul></div>
-    <div class="hx__bar wrap" aria-hidden="true"><span data-hx-bar></span></div>
   </div>
 </section>"""
 
@@ -297,7 +295,7 @@ def build_home():
                       f'<div class="fb__face fb__front">{page_img(front, k == 0)}<span class="fb__sheen" aria-hidden="true"></span></div>'
                       f'<div class="fb__face fb__back">{page_img(back)}<span class="fb__sheen" aria-hidden="true"></span></div></div>')
     strip = "".join(f'<li>{page_img(pg)}</li>' for pg in bk)
-    book = f"""<section class="fb" aria-labelledby="book-t" data-fb data-scene="ink">
+    book = f"""<section class="fb" aria-labelledby="book-t" data-fb>
   <div class="fb__pin">
     <div class="fb__head wrap">
       <h2 id="book-t" class="h-sec">{lines(h['book_title'])}</h2>
@@ -320,7 +318,7 @@ def build_home():
     row2 = "".join(item(l) for l in logos[half:])
     grid = "".join(item(l) for l in logos)
     names = "".join(f"<li>{esc(l['name'])}</li>" for l in logos)
-    trust = f"""<section class="trust" aria-labelledby="trust-t" data-scene="paper">
+    trust = f"""<section class="trust" aria-labelledby="trust-t" data-mist="ink">
   <div class="wrap"><h2 id="trust-t" class="h-sec trust__t">{lines(h['trust_title'])}</h2></div>
   <ul class="sr-only">{names}</ul>
   <div class="mq" aria-hidden="true" data-mq>
@@ -329,7 +327,7 @@ def build_home():
   </div>
   <div class="wrap trust__grid" aria-hidden="true">{grid}</div>
 </section>"""
-    page(slug, top + manifest + frame + metiers + works + book + trust, "p-home", end=contact_band(slug))
+    page(slug, top + manifest + frame + metiers + works + trust + book, "p-home", end=contact_band(slug))
 
 
 def tile(w, n, b, cls):
@@ -388,7 +386,7 @@ def build_rubric(slug):
     film = ""
     if slug == "ateliers-de-personnalisation":
         A.file("givenchy-film-1280.jpg"); A.file("givenchy-film-1280.avif")
-        film = f"""<section class="film" aria-labelledby="film-t" data-scene="ink">
+        film = f"""<section class="film" aria-labelledby="film-t">
   <div class="wrap">
     <div class="film__frame" data-film="{c.YOUTUBE_ID}" data-title="{esc(c.YOUTUBE_TITLE)}">
       <button class="film__btn" type="button" aria-describedby="film-n"><picture><source type="image/avif" srcset="{b}assets/media/givenchy-film-1280.avif"><img src="{b}assets/media/givenchy-film-1280.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async"></picture>
@@ -414,17 +412,16 @@ def build_rubric(slug):
     <div class="intro__rest" data-reveal>{rest}</div>
   </div>
 </section>
-<section class="works" aria-label="Réalisations" data-scene="paper">
+<section class="works" aria-label="Réalisations">
   <div class="wrap">
     {''.join(blocks)}
   </div>
 </section>
 {film}
-<div class="nx" data-nx data-scene="ink">
+<div class="nx" data-nx>
   <a class="next" href="{link(slug, nxt)}">
-    <span class="next__media" aria-hidden="true" data-nx-media>{nimg}</span>
-    <span class="next__k">Rubrique suivante</span>
-    <span class="next__t">{esc(LABEL[nxt])}</span>
+    <span class="next__media" aria-hidden="true" data-nx-media>{nimg}<span class="hero__shade"></span></span>
+    <span class="next__in wrap"><span class="next__k">Rubrique suivante</span><span class="next__t">{esc(LABEL[nxt])}</span></span>
   </a>
 </div>"""
     page(slug, main, "p-rubric", lightbox=True, end=contact_band(slug))
@@ -472,7 +469,7 @@ def build_contact():
     {''.join(gs)}
   </div>
 </section>
-<section class="mapx" aria-labelledby="map-t" data-map="{c.MAPS_EMBED}">
+<section class="mapx" aria-labelledby="map-t" data-map="{c.MAPS_EMBED}" data-mist="ink">
   <div class="wrap mapx__in">
     <h2 class="mapx__k" id="map-t">Plan d’accès</h2>
     <p class="mapx__addr"><span class="split">Agence Cobalt Création</span><br><span class="split">{esc(street)}</span><br><span class="split">{esc(city)}</span></p>
@@ -503,7 +500,7 @@ def build_privacy():
             out.append(f"<p>{esc(bl['text'])}</p>")
     if in_list:
         out.append("</ul>")
-    page(slug, f'<section class="legal"><div class="wrap legal__in">{"".join(out)}</div></section>', "p-legal", over_hero=False)
+    page(slug, f'<section class="legal" data-mist="ink"><div class="wrap legal__in">{"".join(out)}</div></section>', "p-legal", over_hero=False)
 
 
 def main():
