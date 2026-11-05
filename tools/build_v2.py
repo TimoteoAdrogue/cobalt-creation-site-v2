@@ -203,11 +203,13 @@ def build_home():
     hero_sub = f'<p class="hero__sub reveal-soft">{esc(ag[0])}</p>'
     top = hero(slug, hero_title, hero_sub, HOME_SLIDE_NAMES)
 
-    words = " ".join(f'<span class="w">{esc(w)}</span>' for w in ag[1].split())
+    # the agency text, verbatim, set as a statement (its first sentence) and a paragraph (its second)
+    lead, rest = ag[1].split(". ", 1)
     manifest = f"""<section class="manifest" aria-labelledby="agence-t">
   <div class="wrap manifest__in">
     <h2 id="agence-t" class="eyebrow">{esc(h['title'])}</h2>
-    <p class="manifest__lit" data-lit>{words}</p>
+    <p class="manifest__lead split">{esc(lead)}.</p>
+    <p class="manifest__rest" data-reveal>{esc(rest)}</p>
   </div>
 </section>"""
 
@@ -401,14 +403,13 @@ def build_rubric(slug):
         title += f'<span class="hero__kicker hero__kicker--after">{esc(h[1])}</span>'
     title += "</h1>"
     intro = c.intro(slug)
-    lead_words = " ".join(f'<span class="w">{esc(w)}</span>' for w in intro[0].split())
     rest = "".join(f"<p>{esc(p)}</p>" for p in intro[1:])
     nxt = NEXT[slug]
     nimg = A.picture_wide(c.sharp_slides(nxt, 1440, 900, 1)[0], b, "100vh", alt="", cls="next__img")
     main = f"""{hero(slug, title, "")}
 <section class="intro">
   <div class="wrap intro__in">
-    <p class="intro__lit" data-lit>{lead_words}</p>
+    <p class="intro__lead split">{esc(intro[0])}</p>
     <div class="intro__rest" data-reveal>{rest}</div>
   </div>
 </section>

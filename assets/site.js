@@ -32,8 +32,15 @@
       const em = node.nodeType === 1 && node.tagName === "EM";
       (node.textContent || "").split(/\s+/).filter(Boolean).forEach((w) => words.push({ w, em }));
     });
-    el.innerHTML = words.map((o, i) => `<span class="sw"><span class="sw__in${o.em ? " is-em" : ""}" style="--w:${i}">${safe(o.w)}</span></span>`).join(" ");
+    el.innerHTML = words.map((o) => `<span class="sw"><span class="sw__in${o.em ? " is-em" : ""}">${safe(o.w)}</span></span>`).join(" ");
   });
+  // the words of a line rise together, one line after the other (measured once laid out, again once the font is in)
+  const lines = () => $$(".split:not(.is-in)").forEach((el) => {
+    let top = null, l = -1;
+    $$(".sw", el).forEach((w) => { if (w.offsetTop !== top) { top = w.offsetTop; l++; } w.firstChild.style.setProperty("--l", l); });
+  });
+  lines();
+  document.fonts?.ready.then(lines);
 
   /* ---------- reveals (IntersectionObserver; also catches content jumped past) ---------- */
   const revealEls = $$("[data-reveal], [data-wipe], .split, .reveal-soft").filter((el) => !(G && desktop() && el.closest("[data-frame]")) && !(G && el.closest("[data-end-in]")));
@@ -223,18 +230,6 @@
   /* ---------- scroll choreography (GSAP) ---------- */
   if (G) {
     const ST = window.ScrollTrigger;
-
-    // words light up as the paragraph crosses the screen
-    $$("[data-lit]").forEach((p) => {
-      const words = $$(".w", p);
-      let lit = 0;
-      ST.create({ trigger: p, start: "top 82%", end: "bottom 50%", scrub: true, onUpdate: (s) => {
-        const k = Math.round(s.progress * words.length);
-        if (k === lit) return;
-        words.forEach((w, j) => w.classList.toggle("is-lit", j < k));
-        lit = k;
-      } });
-    });
 
     const mm = G.matchMedia();
 
