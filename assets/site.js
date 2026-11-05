@@ -301,6 +301,8 @@
           const open = Math.min(Math.max(total, 0), 1), close = Math.min(Math.max(total - (N - 1), 0), 1);
           book.style.transform = `translateX(calc(var(--pw) * ${(-0.5 * (1 - open) + 0.5 * close).toFixed(4)}))`;
           book.style.setProperty("--spine", Math.min(open, 1 - close).toFixed(3));
+          book.style.setProperty("--open", open.toFixed(3)); book.style.setProperty("--close", close.toFixed(3));
+          book.style.setProperty("--done", Math.min(Math.max(total / N, 0), 1).toFixed(3));
           const k = Math.round(total);
           setChap(k <= 0 ? "Le book" : leaves[Math.min(k, N) - 1].dataset.chapter);
         };
@@ -363,20 +365,6 @@
     }
     // the photograph that closes a rubric dissolves from the bottom as the page lifts off, so no edge crosses the end panel
     if (endEl && $(".next")) G.fromTo(".next", { "--lift": 0 }, { "--lift": 1, ease: "none", scrollTrigger: { ...lift } });
-
-    // the logo marquee answers the scroll: faster with speed, reversing with direction
-    const tracks = $$("[data-mq] .mq__track");
-    if (tracks.length) {
-      const anims = tracks.map((t) => t.getAnimations ? t.getAnimations()[0] : null).filter(Boolean);
-      let boost = 0, dirSign = 1;
-      ST.create({ trigger: "[data-mq]", start: "top bottom", end: "bottom top", onUpdate: (s) => {
-        boost = Math.min(Math.abs(s.getVelocity()) / 250, 6); dirSign = s.direction;
-      } });
-      G.ticker.add(() => {
-        boost *= 0.92;
-        anims.forEach((a) => { a.playbackRate = dirSign * (1 + boost); });
-      });
-    }
 
     // images and fonts change heights: measure again once they are in
     addEventListener("load", () => ST.refresh());

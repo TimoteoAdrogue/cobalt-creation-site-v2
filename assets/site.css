@@ -255,21 +255,23 @@ html.lenis, html.lenis body { height: auto; }
 
 /* ---------- F5 trust: two-row marquee that answers the scroll ---------- */
 .trust { padding-top: clamp(100px, 12vw, 170px); overflow: hidden; }
-.trust__t { text-align: center; margin-bottom: clamp(48px, 6vw, 80px); }
-.mq { display: grid; gap: clamp(18px, 2.4vw, 34px);
+.trust__t { margin-bottom: clamp(40px, 5vw, 64px); }
+.mq { display: grid; gap: clamp(26px, 3vw, 44px);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
 .mq__row { overflow: hidden; }
 .mq__track { display: flex; width: max-content; animation: mq 50s linear infinite; }
 .mq__track[data-dir="1"] { animation-direction: reverse; animation-duration: 56s; }
 .mq:hover .mq__track { animation-play-state: paused; }
-.mq__item { flex: 0 0 auto; width: clamp(130px, 13vw, 190px); height: clamp(64px, 6.4vw, 88px); display: grid; place-items: center; padding: 0 clamp(14px, 1.6vw, 26px); }
-.logo { display: block; width: 100%; height: 100%; background: var(--ink); -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; opacity: .88; }
+/* every mark at the same optical area (--w × --h from the build), scaled down on small screens */
+.mq__item { --k: 1; flex: 0 0 auto; width: calc(var(--w) * var(--k)); height: calc(var(--h) * var(--k)); margin-right: clamp(40px, 4.4vw, 72px); align-self: center; }
+.mq__row { display: flex; align-items: center; min-height: 64px; }
+.logo { display: block; width: 100%; height: 100%; background: var(--ink); -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+@media (max-width: 767px) { .mq__item { --k: .72; margin-right: 32px; } }
 @keyframes mq { to { transform: translateX(-50%); } }
 .trust__grid { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .mq { display: none; }
-  .trust__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px 16px; }
-  .trust__grid .mq__item { width: auto; }
+  .trust__grid { display: flex; flex-wrap: wrap; align-items: center; gap: 28px 0; }
 }
 
 /* ---------- call-out ---------- */
@@ -566,21 +568,28 @@ html.pt-in::after { content: ""; animation: pt-lift .95s var(--expo) .2s forward
 
 /* ---------- the book, leafed through with the scroll ---------- */
 .fb { background: var(--ink); color: var(--cream); overflow: hidden; }
-.fb__pin { position: relative; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; gap: clamp(20px, 3.4vh, 40px); padding-block: calc(var(--hd) + 8px) 28px; }
-.fb__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 32px; }
+.fb__pin { position: relative; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; gap: clamp(28px, 6vh, 64px); padding-block: calc(var(--hd) + 8px) 28px; }
+.fb__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 16px 32px; }
+.fb .lnk { color: var(--cream); }
+.fb__size { color: #9FB2BF; letter-spacing: .12em; }
 .fb .h-sec { color: var(--cream); }
-.fb__chapter { margin: 0; font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: var(--gold); overflow: hidden; min-width: 18ch; text-align: center; }
+.fb__chapter { margin: 0 auto; font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: var(--gold); overflow: hidden; text-align: center; }
 .fb__chapter span { display: inline-block; transition: transform .6s var(--expo), opacity .6s var(--ease); }
 .fb__chapter span.is-swap { transform: translateY(110%); opacity: 0; }
-.fb__dl { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
-.fb__dl .book__btn { white-space: nowrap; }
-.fb__dl .book__meta { margin: 0; }
+.fb__dl { white-space: nowrap; }
 .fb__stage { display: grid; place-items: center; perspective: 2600px; }
 .fb__book { --pw: min(38vw, 64vh, 560px); position: relative; width: calc(var(--pw) * 2); height: var(--pw); transform-style: preserve-3d; will-change: transform; }
 .fb__book::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 60px; margin-left: -30px; z-index: 99; pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(0, 0, 0, .14) 46%, rgba(0, 0, 0, .22) 50%, rgba(0, 0, 0, .1) 54%, transparent); opacity: var(--spine, 0); }
 .fb__leaf { position: absolute; left: 50%; top: 0; width: var(--pw); height: var(--pw); transform-origin: 0 50%; transform-style: preserve-3d; transform: rotateY(var(--r, 0deg)); }
-.fb__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; background: #fff; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .55); }
+.fb__face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; background: #fff; }
+/* the contact shadow follows what lies on the table: the cover alone, the open spread, then the back cover alone */
+.fb__book::before { content: ""; position: absolute; top: 96%; height: 13%; pointer-events: none;
+  left: calc(var(--pw) * (1 - var(--open, 0)) - 4%); width: calc(var(--pw) * (1 + var(--open, 0) - var(--close, 0)) + 8%);
+  background: radial-gradient(closest-side, rgba(0, 12, 20, .62), rgba(0, 12, 20, 0)); }
+.fb__edge { position: absolute; top: .6%; height: 98.8%; pointer-events: none; background: repeating-linear-gradient(90deg, #f4f1ea 0 1px, #cfc8bb 1px 2px); }
+.fb__edge--r { left: 100%; width: calc((1 - var(--done, 0)) * 9px); }
+.fb__edge--l { right: 100%; width: calc(var(--done, 0) * 9px); }
 .fb__face img { width: 100%; height: 100%; object-fit: cover; }
 .fb__back { transform: rotateY(180deg); }
 .fb__sheen { position: absolute; inset: 0; pointer-events: none; opacity: var(--shade, 0); }
@@ -592,7 +601,10 @@ html.pt-in::after { content: ""; animation: pt-lift .95s var(--expo) .2s forward
   .fb__stage, .fb__chapter { display: none; }
   .fb__strip { display: flex; gap: 12px; margin: 0; padding: 0 var(--gut); list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .fb__strip::-webkit-scrollbar { display: none; }
-  .fb__strip li { flex: 0 0 78vw; max-width: 460px; scroll-snap-align: center; aspect-ratio: 1; background: #fff; }
+  .fb__strip li { flex: 0 0 62vw; max-width: 420px; scroll-snap-align: center; aspect-ratio: 1; background: #fff; display: flex; }
+  .fb__strip li.is-spread { flex-basis: 124vw; max-width: 840px; aspect-ratio: 2; }
+  .fb__strip li picture img { width: 50%; }
+  .fb__strip li:not(.is-spread) picture img { width: 100%; }
   .fb__strip img { width: 100%; height: 100%; object-fit: cover; }
 }
 /* without the script (or with reduced motion) every métier shows its own photograph in the flow */
@@ -602,5 +614,7 @@ html.pt-in::after { content: ""; animation: pt-lift .95s var(--expo) .2s forward
 .no-gsap .mt__body, html:not(.js) .mt__body { max-width: var(--max); margin-inline: auto; padding-inline: var(--gut); }
 .no-gsap .fb__stage, .no-gsap .fb__chapter { display: none; }
 .no-gsap .fb__strip { display: flex; gap: 12px; margin: 0; padding: 0 var(--gut); list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; }
-.no-gsap .fb__strip li { flex: 0 0 min(78vw, 460px); aspect-ratio: 1; background: #fff; }
+.no-gsap .fb__strip li { flex: 0 0 min(62vw, 420px); aspect-ratio: 1; background: #fff; display: flex; }
+.no-gsap .fb__strip li.is-spread { flex-basis: min(124vw, 840px); aspect-ratio: 2; }
+.no-gsap .fb__strip li.is-spread img { width: 50%; }
 .no-gsap .fb__strip img { width: 100%; height: 100%; object-fit: cover; }

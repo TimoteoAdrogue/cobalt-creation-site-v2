@@ -337,15 +337,17 @@ def build_home():
         leaves.append(f'<div class="fb__leaf" data-chapter="{esc(chapter(bk[k + 2]["page"]) if k + 2 < len(bk) else "Le book")}">'
                       f'<div class="fb__face fb__front">{page_img(front, k == 0)}<span class="fb__sheen" aria-hidden="true"></span></div>'
                       f'<div class="fb__face fb__back">{page_img(back)}<span class="fb__sheen" aria-hidden="true"></span></div></div>')
-    strip = "".join(f'<li>{page_img(pg)}</li>' for pg in bk)
+    cells = [[bk[0]]] + [bk[k:k + 2] for k in range(1, len(bk) - 1, 2)] + [[bk[-1]]]
+    spread = ' class="is-spread"'
+    strip = "".join(f'<li{spread if len(cl) == 2 else ""}>{"".join(page_img(pg) for pg in cl)}</li>' for cl in cells)
     book = f"""<section class="fb" aria-labelledby="book-t" data-fb>
   <div class="fb__pin">
     <div class="fb__head wrap">
       <h2 id="book-t" class="h-sec">{lines(h['book_title'])}</h2>
-      <p class="fb__chapter" aria-live="off"><span data-fb-chapter>Le book</span></p>
-      <div class="fb__dl"><a class="book__btn" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf"><span>{esc(h['book_link'])}</span><span aria-hidden="true">&darr;</span></a><span class="book__meta">PDF, {c.BOOK_SIZE}</span></div>
+      <a class="lnk fb__dl" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf"><span>{esc(h['book_link'])}</span><span class="fb__size">PDF, {c.BOOK_SIZE}</span><span aria-hidden="true">&darr;</span></a>
     </div>
-    <div class="fb__stage"><div class="fb__book" data-fb-book>{''.join(leaves)}</div></div>
+    <div class="fb__stage"><div class="fb__book" data-fb-book>{''.join(leaves)}<span class="fb__edge fb__edge--l" aria-hidden="true"></span><span class="fb__edge fb__edge--r" aria-hidden="true"></span></div></div>
+    <p class="fb__chapter wrap" aria-live="off"><span data-fb-chapter>Le book</span></p>
     <ul class="fb__strip" aria-label="Pages du book">{strip}</ul>
   </div>
 </section>"""
@@ -356,13 +358,16 @@ def build_home():
     def item(l):
         A.file(f"logos/{l['file']}")
         u = f"assets/media/logos/{l['file']}"
-        return f'<div class="mq__item"><span class="logo" style="-webkit-mask-image:url({u});mask-image:url({u})"></span></div>'
+        ar = l["w"] / l["h"]
+        hh = min(max((4600 / ar) ** 0.5, 22), 64)   # same area for every mark, within a readable height
+        return (f'<div class="mq__item" style="--w:{hh * ar:.0f}px;--h:{hh:.0f}px">'
+                f'<span class="logo" style="-webkit-mask-image:url({u});mask-image:url({u})"></span></div>')
     row1 = "".join(item(l) for l in logos[:half])
     row2 = "".join(item(l) for l in logos[half:])
     grid = "".join(item(l) for l in logos)
     names = "".join(f"<li>{esc(l['name'])}</li>" for l in logos)
     trust = f"""<section class="trust" aria-labelledby="trust-t" data-mist="ink">
-  <div class="wrap"><h2 id="trust-t" class="h-sec trust__t">{lines(h['trust_title'])}</h2></div>
+  <div class="wrap"><h2 id="trust-t" class="eyebrow trust__t">{esc(h['trust_title'])}</h2></div>
   <ul class="sr-only">{names}</ul>
   <div class="mq" aria-hidden="true" data-mq>
     <div class="mq__row"><div class="mq__track" data-dir="-1">{row1}{row1}</div></div>
