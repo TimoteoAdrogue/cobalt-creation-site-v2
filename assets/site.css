@@ -126,7 +126,7 @@ html.lenis, html.lenis body { height: auto; }
 .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(1, 30, 44, .2), rgba(1, 30, 44, .62)); opacity: var(--dim); pointer-events: none; }
 /* grounds: three pure colours, never mixed. A scene's ground changes only under a full-bleed photograph or through a
    mist: the next ground rising as an eased gradient (a linear ramp shows a band where it ends) */
-.manifest, .intro, .frame, .mt, .stack, .works, .film, .nx, .hx, .fb, .trust, .mapx, .legal { position: relative; z-index: 2; }
+.manifest, .intro, .frame, .mt, .works, .film, .nx, .hx, .fb, .trust, .mapx, .legal { position: relative; z-index: 2; }
 .manifest, .frame, .mapx { background: var(--cream); }
 .intro, .works, .film, .nx, .hx, .trust, .legal { background: var(--paper); }
 .fb { background: var(--ink); }
@@ -185,32 +185,32 @@ html.lenis, html.lenis body { height: auto; }
 .frame__p { margin: 0; max-width: 24ch; font-weight: var(--w-display); font-size: clamp(30px, 3.9vw, 64px); line-height: 1.06; letter-spacing: var(--t-tight); color: #fff; }
 .frame__p .is-em, .frame__p em { color: #F2E6D3; }
 .frame__cap { position: absolute; left: 0; right: 0; bottom: 26px; margin: 0; text-align: right; font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: rgba(255, 255, 255, .86); }
-.frame.is-live { height: 330vh; }
+.frame.is-live { height: 360vh; }
 .frame.is-live .frame__pin { position: sticky; top: 0; }
-.frame.is-live + .stack { margin-top: -100vh; }
 
-/* ---------- F3 métiers: stacking cards ---------- */
-/* each panel dissolves in over the one before through a soft top edge (--f, 1 → 0 as it arrives), never a line;
-   the last one holds while it dissolves into the cream of the works that follow */
-.stack { z-index: 3; }
-.card { position: sticky; top: 0; height: 100vh; height: 100dvh; min-height: 640px;
-  -webkit-mask-image: linear-gradient(transparent, #000 calc(var(--f, 0) * 75vh)); mask-image: linear-gradient(transparent, #000 calc(var(--f, 0) * 75vh)); }
-.card:not(:last-child) { margin-bottom: 50vh; }   /* each panel holds still for a moment before the next one covers it */
-.card__in { display: grid; grid-template-columns: minmax(0, 1.18fr) minmax(0, 1fr); height: 100%; position: relative; background: var(--paper); transform-origin: 50% 40%; }
-.card:nth-child(even) .card__media { order: 2; }
-.card__media { display: block; overflow: hidden; background: var(--mist); }
-.card__veil { position: absolute; inset: 0; z-index: 2; background: var(--ink); opacity: 0; pointer-events: none; }
-.card__img { width: 100%; height: 100%; object-fit: cover; }
-.card__text { display: flex; flex-direction: column; justify-content: center; padding: calc(var(--hd) + 2vh) clamp(36px, 5.4vw, 104px) 5vh; }
-.card__num { margin: 0 0 clamp(18px, 3vh, 34px); font-size: 13px; letter-spacing: .2em; color: var(--mute); line-height: 1; }
-.card__num span { font-size: clamp(56px, 6.4vw, 104px); font-weight: 200; letter-spacing: -.02em; color: var(--gold); margin-right: 10px; vertical-align: -.08em; }
-.card__t { font-size: clamp(24px, 2.3vw, 36px); font-weight: var(--w-display); text-transform: uppercase; letter-spacing: var(--t-caps); line-height: 1.05; margin-bottom: 24px; }
-.card__t a { text-decoration: none; }
-.card p { font-size: 15.5px; }
-.card__lead { color: var(--ink); margin-bottom: .4em; }
-.card ul { list-style: none; margin: 14px 0 0; padding: 0; font-size: 15px; columns: 2 220px; column-gap: 28px; }
-.card li { position: relative; padding-left: 20px; margin-bottom: 8px; line-height: 1.5; break-inside: avoid; }
-.card li::before { content: ""; position: absolute; left: 0; top: .76em; width: 10px; height: 1px; background: var(--gold-ink); }
+/* ---------- F3 métiers: one sticky photograph column, the métiers scroll beside it ---------- */
+/* the section rises over the full-screen mission photograph through a paper mist, its photograph column still empty,
+   so the mist is paper on photograph across the whole width; then each photograph opens in the column */
+.mt { display: grid; grid-template-columns: minmax(0, 56fr) minmax(0, 44fr); z-index: 3; background: var(--paper); --n: 255 255 255; }
+.mt::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 42vh; pointer-events: none;
+  background: linear-gradient(rgb(var(--n) / 0), rgb(var(--n) / .05) 15%, rgb(var(--n) / .18) 30%, rgb(var(--n) / .4) 46%, rgb(var(--n) / .64) 62%, rgb(var(--n) / .85) 78%, rgb(var(--n) / .97) 92%, rgb(var(--n))); }
+.frame.is-live + .mt { margin-top: -100vh; }
+.mt__media { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; }
+.mt__pic { position: absolute; inset: 0; display: block; overflow: hidden; }
+.mt__img { width: 100%; height: 100%; object-fit: cover; }
+/* each photograph after the first replaces the one before through a soft 14 % edge rising from the bottom (--y 0 → 1) */
+.mt__pic + .mt__pic { -webkit-mask-image: linear-gradient(to top, #000 calc(var(--y, 1) * 114% - 14%), transparent calc(var(--y, 1) * 114%)); mask-image: linear-gradient(to top, #000 calc(var(--y, 1) * 114% - 14%), transparent calc(var(--y, 1) * 114%)); }
+.mt__text { padding-inline: clamp(36px, 5vw, 96px) var(--gut); }
+.mt__item { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; padding-block: calc(var(--hd) + 4vh) 8vh; }
+.mt__ph { display: none; }
+.mt__t { font-size: clamp(26px, 2.6vw, 42px); text-transform: uppercase; letter-spacing: var(--t-caps); line-height: 1.04; margin-bottom: clamp(22px, 3vh, 34px); max-width: 12ch; }
+.mt__t a { text-decoration: none; }
+.mt__body p { font-size: 16px; max-width: 38em; }
+.mt__lead { color: var(--ink); margin-bottom: .4em; }
+/* the métier's list as one run-in line (same words, same items) */
+.mt__list { list-style: none; margin: 4px 0 0; padding: 0; font-size: 15px; line-height: 1.7; color: var(--ink); max-width: 38em; }
+.mt__list li { display: inline; }
+.mt__list li + li::before { content: "·"; content: "·" / ""; margin: 0 .55em; color: var(--gold-ink); }
 .more { display: inline-flex; gap: 12px; align-items: center; margin-top: 26px; font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: var(--ink); text-decoration: none; }
 .more span { transition: transform .5s var(--expo); }
 .more:hover span { transform: translateX(8px); }
@@ -485,13 +485,12 @@ html.lenis, html.lenis body { height: auto; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 900px) {
-  .stack { background: var(--paper); }
-  .card, .card:not(:last-child) { position: relative; top: auto; height: auto; min-height: 0; margin-bottom: 0; }
-  .card__in { grid-template-columns: 1fr; height: auto; }
-  .card:nth-child(even) .card__media { order: 0; }
-  .card__media { aspect-ratio: 4 / 3; }
-  .card__text { padding: 30px var(--gut) 64px; }
-  .card__num span { font-size: 52px; }
+  .mt { display: block; }
+  .mt__media { display: none; }
+  .mt__text { padding: 0; }
+  .mt__item { min-height: 0; display: block; padding: 0 0 clamp(56px, 12vw, 80px); }
+  .mt__ph { display: block; height: 72svh; max-height: 640px; overflow: hidden; margin-bottom: 30px; }
+  .mt__body { padding-inline: var(--gut); }
   .hx__ghost { display: none; }
   .hx__item:nth-child(even) { margin-top: 0; }
   .hx__frame { height: auto; width: 72vw; aspect-ratio: 4 / 5; }
@@ -599,6 +598,11 @@ html.pt-in::after { content: ""; animation: pt-lift .95s var(--expo) .2s forward
   .fb__strip li { flex: 0 0 78vw; max-width: 460px; scroll-snap-align: center; aspect-ratio: 1; background: #fff; }
   .fb__strip img { width: 100%; height: 100%; object-fit: cover; }
 }
+/* without the script (or with reduced motion) every métier shows its own photograph in the flow */
+.no-gsap .mt, html:not(.js) .mt { display: block; } .no-gsap .mt__media, html:not(.js) .mt__media { display: none; } .no-gsap .mt__text, html:not(.js) .mt__text { padding: 0; }
+.no-gsap .mt__item, html:not(.js) .mt__item { min-height: 0; display: block; padding: 0 0 72px; }
+.no-gsap .mt__ph, html:not(.js) .mt__ph { display: block; height: 80vh; overflow: hidden; margin-bottom: 30px; }
+.no-gsap .mt__body, html:not(.js) .mt__body { max-width: var(--max); margin-inline: auto; padding-inline: var(--gut); }
 .no-gsap .fb__stage, .no-gsap .fb__chapter { display: none; }
 .no-gsap .fb__strip { display: flex; gap: 12px; margin: 0; padding: 0 var(--gut); list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; }
 .no-gsap .fb__strip li { flex: 0 0 min(78vw, 460px); aspect-ratio: 1; background: #fff; }

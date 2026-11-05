@@ -33,6 +33,46 @@ def base(slug):
     return "../" if slug else ""
 
 
+def sharp(name, widths):
+    """V2-only derivatives above the shared set, cut from the client's original in src-media/ (cached in media/v2/),
+    for photographs shown larger than the shared files allow on a retina screen. Returns [{w, h, jpg, avif}]."""
+    m = c.MEDIA_INDEX[name]
+    stem = name.split("~")[0].replace("53e2f6_", "")[:12]
+    out = []
+    for w in widths:
+        w = min(w, m["w"])
+        h = round(m["h"] * w / m["w"])
+        rel = f"v2/{stem}-v{w}"
+        if not (c.MEDIA / f"{rel}.avif").exists():
+            from PIL import Image, ImageOps
+            Image.MAX_IMAGE_PIXELS = None
+            im = ImageOps.exif_transpose(Image.open(ROOT / "src-media" / name)).convert("RGB").resize((w, h), Image.LANCZOS)
+            (c.MEDIA / "v2").mkdir(exist_ok=True)
+            im.save(c.MEDIA / f"{rel}.jpg", "JPEG", quality=84, optimize=True, progressive=True)
+            im.save(c.MEDIA / f"{rel}.avif", "AVIF", quality=62, speed=6)
+        A.file(f"{rel}.jpg"); A.file(f"{rel}.avif")
+        if w not in [f["w"] for f in out]:
+            out.append({"w": w, "h": h, "jpg": f"{rel}.jpg", "avif": f"{rel}.avif"})
+    return out
+
+
+def vpic(name, b, sizes, more=(), cls="", alt="", eager=False, wide=False):
+    """<picture> from the shared derivatives (or the wide set) plus V2's sharper ones."""
+    files = list((c.ensure_wide(name) if wide else c.MEDIA_INDEX[name])["files"])
+    for f in files:
+        A.file(f["jpg"]); A.file(f["avif"])
+    top = max(f["w"] for f in files)
+    files += [f for f in sharp(name, more) if f["w"] > top]
+    files.sort(key=lambda f: f["w"])
+    avif = ", ".join(f"{b}assets/media/{f['avif']} {f['w']}w" for f in files)
+    jpg = ", ".join(f"{b}assets/media/{f['jpg']} {f['w']}w" for f in files)
+    f0 = files[0]
+    c_ = f' class="{cls}"' if cls else ""
+    return (f'<picture><source type="image/avif" srcset="{avif}" sizes="{sizes}">'
+            f'<img{c_} src="{b}assets/media/{f0["jpg"]}" srcset="{jpg}" sizes="{sizes}" width="{f0["w"]}" height="{f0["h"]}" '
+            f'alt="{esc(alt)}" loading="{"eager" if eager else "lazy"}" decoding="async"></picture>')
+
+
 def link(slug, target):
     if target == "":
         return "../" if slug else "./"
@@ -221,7 +261,7 @@ def build_home():
     big = esc(sentence).replace("en offrant des créations sur-mesure", "<em>en offrant des créations sur-mesure</em>", 1)
     frame = f"""<section class="frame" data-frame aria-labelledby="frame-t">
   <div class="frame__pin">
-    <div class="frame__media" data-frame-media>{A.picture_wide(fw["media"], b, "100vh", alt="", cls="frame__img")}<span class="frame__shade" aria-hidden="true"></span>
+    <div class="frame__media" data-frame-media>{vpic(fw["media"], b, f"max(112vw, calc(112vh * {c.MEDIA_INDEX[fw['media']]['w'] / c.MEDIA_INDEX[fw['media']]['h']:.3f}))", (3840,), cls="frame__img", wide=True)}<span class="frame__shade" aria-hidden="true"></span>
       <div class="frame__text wrap">
         <h2 class="frame__k" id="frame-t">{esc(kicker)}</h2>
         <p class="frame__p split">{big}</p>
@@ -231,25 +271,26 @@ def build_home():
   </div>
 </section>"""
 
-    cards = []
+    # the three métiers: one sticky photograph column (desktop), the métiers scroll beside it; phones get each photograph inline
+    stills, items = [], []
     for i, col in enumerate(h["columns"]):
+        href = link(slug, col["slug"])
         paras = "".join(f"<p>{esc(p)}</p>" for p in col["paras"])
-        lead = f'<p class="card__lead">{esc(col["lead"])}</p>' if col["lead"] else ""
+        lead = f'<p class="mt__lead">{esc(col["lead"])}</p>' if col["lead"] else ""
         lis = "".join(f"<li>{esc(x)}</li>" for x in col["bullets"])
-        pic = A.picture(col["image"], b, "(max-width: 900px) 100vw, 56vw", alt="", cls="card__img")
-        cards.append(f"""<article class="card" style="--i:{i}">
-      <div class="card__in">
-        <span class="card__veil" aria-hidden="true"></span>
-        <a class="card__media" href="{link(slug, col['slug'])}" tabindex="-1" aria-hidden="true">{pic}</a>
-        <div class="card__text">
-          <p class="card__num" aria-hidden="true"><span>0{i + 1}</span> / 0{len(h["columns"])}</p>
-          <h3 class="card__t"><a href="{link(slug, col['slug'])}">{esc(col['title'])}</a></h3>
-          {paras}{lead}<ul>{lis}</ul>
-          <a class="more" href="{link(slug, col['slug'])}">Voir les réalisations <span aria-hidden="true">&rarr;</span></a>
-        </div>
+        stills.append(f'<a class="mt__pic" href="{href}" tabindex="-1">{vpic(col["image"], b, "max(56vw, calc(100vh * 0.9))", (2000,), cls="mt__img")}</a>')
+        items.append(f"""<article class="mt__item">
+      <a class="mt__ph" href="{href}" tabindex="-1" aria-hidden="true">{A.picture(col["image"], b, "100vw", alt="", cls="mt__img")}</a>
+      <div class="mt__body">
+        <h3 class="mt__t"><a class="split" href="{href}">{esc(col['title'])}</a></h3>
+        <div data-reveal>{paras}{lead}<ul class="mt__list">{lis}</ul>
+        <a class="more" href="{href}">Voir les réalisations <span aria-hidden="true">&rarr;</span></a></div>
       </div>
     </article>""")
-    metiers = f"""<section class="stack" aria-label="Nos métiers">{''.join(cards)}</section>"""
+    metiers = f"""<section class="mt" aria-label="Nos métiers" data-mt>
+  <div class="mt__media" aria-hidden="true">{''.join(stills)}</div>
+  <div class="mt__text">{''.join(items)}</div>
+</section>"""
 
     # pinned horizontal gallery: four works per rubric, in live order, linked to their page
     items = []

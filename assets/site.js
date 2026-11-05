@@ -239,12 +239,12 @@
       const media = $("[data-frame-media]", frame), fimg = $("img", media), fp = $(".frame__p", frame);
       mm.add("(min-width: 901px)", () => {
         frame.classList.add("is-live");
-        const tl = G.timeline({ defaults: { ease: "power2.inOut" }, scrollTrigger: { trigger: frame, start: "top top", end: () => "+=" + innerHeight * 1.3, scrub: 0.7,
-          onUpdate: (s) => fp.classList.toggle("is-in", s.progress > 0.58) } });
-        tl.fromTo(media, { clipPath: "inset(23% 33% 23% 33%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1 }, 0)
-          .fromTo(fimg, { scale: 1.4 }, { scale: 1, duration: 1 }, 0)
-          .fromTo([".frame__k", ".frame__cap"], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.72)
-          .to({}, { duration: 0.35 });
+        // it opens as it enters (half open when it reaches the top), never held small on the ground
+        const tl = G.timeline({ defaults: { ease: "power2.inOut" }, scrollTrigger: { trigger: frame, start: "top 80%", end: () => "+=" + innerHeight * 1.6, scrub: 0.7,
+          onUpdate: (s) => fp.classList.toggle("is-in", s.progress > 0.62) } });
+        tl.fromTo(media, { clipPath: "inset(12% 22% 12% 22%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1 }, 0)
+          .fromTo(fimg, { scale: 1.12 }, { scale: 1, duration: 1 }, 0)
+          .fromTo([".frame__k", ".frame__cap"], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.72);
         return () => frame.classList.remove("is-live");
       });
       mm.add("(max-width: 900px)", () => {
@@ -253,16 +253,20 @@
     }
 
     mm.add("(min-width: 901px)", () => {
-      // métiers: full-screen panels; each dissolves in over the one before (soft edge, no line), which darkens
-      // while its text drifts away; the last one holds and dissolves into the cream of the works that follow
-      const cards = $$(".card");
-      cards.forEach((card, k) => {
-        G.fromTo($(".card__img", card), { scale: 1.24, yPercent: -5 }, { scale: 1, yPercent: 0, ease: "none", scrollTrigger: { trigger: card, start: "top bottom", end: "top top", scrub: true } });
-        G.fromTo(card, { "--f": 1 }, { "--f": 0, ease: "none", scrollTrigger: { trigger: card, start: "top bottom", end: "top top", scrub: true } });
-        if (k === cards.length - 1) return;
-        const st = { trigger: cards[k + 1], start: "top bottom", end: "top top", scrub: true };
-        G.fromTo($(".card__text", card), { yPercent: 0, opacity: 1 }, { yPercent: -12, opacity: 0.2, ease: "none", scrollTrigger: st });
-      });
+      // métiers: the first photograph opens in the column as the section arrives; each next one replaces it through a
+      // soft edge rising from the bottom while its métier comes up beside it (photograph into photograph, never layouts)
+      const mt = $("[data-mt]");
+      if (mt) {
+        const pics = $$(".mt__pic", mt), arts = $$(".mt__item", mt);
+        G.timeline({ scrollTrigger: { trigger: mt, start: "top 55%", end: "top top", scrub: 0.6 } })
+          .fromTo(pics[0], { clipPath: "inset(16% 14% 16% 14%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "power2.out" }, 0)
+          .fromTo($("img", pics[0]), { scale: 1.12 }, { scale: 1, ease: "power2.out" }, 0);
+        pics.slice(1).forEach((p, k) => {
+          const st = { trigger: arts[k + 1], start: "top bottom", end: "top 25%", scrub: 0.6 };
+          G.fromTo(p, { "--y": 0 }, { "--y": 1, ease: "none", scrollTrigger: st });
+          G.fromTo($("img", p), { scale: 1.1 }, { scale: 1, ease: "none", scrollTrigger: { ...st } });
+        });
+      }
 
       // pinned horizontal gallery: the title drifts behind, each photograph slides inside its frame
       const hx = $("[data-hx]");
@@ -328,7 +332,7 @@
 
     mm.add("(max-width: 900px)", () => {
       // phones: each métier photograph opens out of its margins as it arrives
-      $$(".card__media").forEach((m) => G.fromTo(m, { clipPath: "inset(14% 9% 14% 9%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none",
+      $$(".mt__ph").forEach((m) => G.fromTo(m, { clipPath: "inset(14% 9% 14% 9%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none",
         scrollTrigger: { trigger: m, start: "top bottom", end: "top 30%", scrub: true } }));
       const media = $("[data-nx-media]");
       if (media) G.fromTo(media, { clipPath: "inset(9% 7% 9% 7%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none", scrollTrigger: { trigger: "[data-nx]", start: "top bottom", end: "top 20%", scrub: true },
