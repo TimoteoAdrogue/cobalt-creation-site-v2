@@ -554,12 +554,10 @@ def build_contact():
         <div class="form__foot"><button class="btn" type="submit">Envoyer</button><p class="form__note">En cliquant sur Envoyer, votre messagerie s’ouvre avec votre message prêt à partir vers {c.EMAIL}.</p></div>
       </form>
     </div>
-  </div>
-</section>
-<section class="team" aria-labelledby="team-t">
-  <div class="wrap">
-    <h2 class="team__t" id="team-t">{lines("L’équipe")}</h2>
-    {''.join(gs)}
+    <section class="team" aria-labelledby="team-t">
+      <h2 class="team__t" id="team-t">{lines("L’équipe")}</h2>
+      {''.join(gs)}
+    </section>
   </div>
 </section>
 <section class="mapx" aria-labelledby="map-t" data-map="{c.MAPS_EMBED}" data-mist="ink">

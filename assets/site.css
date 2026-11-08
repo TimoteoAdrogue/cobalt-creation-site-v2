@@ -127,8 +127,8 @@ html.lenis, html.lenis body { height: auto; }
 /* grounds: three pure colours, never mixed. A scene's ground changes only under a full-bleed photograph or through a
    mist: the next ground rising as an eased gradient (a linear ramp shows a band where it ends) */
 .manifest, .intro, .frame, .mt, .works, .film, .nx, .hx, .fb, .trust, .mapx, .legal { position: relative; z-index: 2; }
-.manifest, .frame, .mapx { background: var(--cream); }
-.intro, .works, .film, .nx, .hx, .trust, .legal { background: var(--paper); }
+.manifest, .frame { background: var(--cream); }
+.intro, .works, .film, .nx, .hx, .trust, .mapx, .legal { background: var(--paper); }
 .fb { background: var(--ink); }
 .manifest { --n: 243 238 228; } .intro { --n: 255 255 255; }
 [data-mist="ink"] { --n: 2 55 79; } [data-mist="paper"] { --n: 255 255 255; }
@@ -195,6 +195,9 @@ html.lenis, html.lenis body { height: auto; }
 .mt::before { content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: 42vh; pointer-events: none;
   background: linear-gradient(rgb(var(--n) / 0), rgb(var(--n) / .05) 15%, rgb(var(--n) / .18) 30%, rgb(var(--n) / .4) 46%, rgb(var(--n) / .64) 62%, rgb(var(--n) / .85) 78%, rgb(var(--n) / .97) 92%, rgb(var(--n))); }
 .frame.is-live + .mt { margin-top: -100vh; }
+/* where the section does not cover the pinned photograph (phones, no script) the mist only softens its last edge */
+@media (max-width: 900px) { .mt::before { height: 14vh; } }
+.no-gsap .mt::before, html:not(.js) .mt::before { height: 14vh; }
 .mt__media { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; }
 .mt__pic { position: absolute; inset: 0; display: block; overflow: hidden; }
 .mt__img { width: 100%; height: 100%; object-fit: cover; }
@@ -435,17 +438,15 @@ html.lenis, html.lenis body { height: auto; }
 .btn--ghost:hover { background: var(--ink); color: #fff; }
 .form__note { font-size: 13px; color: var(--mute); margin: 0; max-width: 44ch; }
 /* team: an editorial list, one line per person */
-.team { padding: clamp(90px, 11vw, 170px) 0 clamp(70px, 9vw, 130px); }
+.team { padding: clamp(80px, 12vh, 140px) 0 0; }
 .team__t { font-size: clamp(34px, 4.4vw, 68px); font-weight: var(--w-display); text-transform: uppercase; letter-spacing: var(--t-caps); line-height: 1; margin-bottom: clamp(48px, 6vw, 88px); }
-.tg { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); gap: 12px clamp(24px, 4vw, 64px); border-top: 1px solid var(--line); padding-top: 6px; margin-bottom: clamp(40px, 5vw, 72px); }
-.tg__n { font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: var(--gold-ink); padding-top: 24px; }
-.tg__list { list-style: none; margin: 0; padding: 0; }
-.tp { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) auto; align-items: baseline; gap: 4px 28px; padding: 18px 0; border-bottom: 1px solid var(--line); }
-.tp:last-child { border-bottom: 0; }
-.tp__n { font-size: clamp(22px, 2.1vw, 32px); font-weight: var(--w-display); letter-spacing: -.01em; color: var(--ink); line-height: 1.2; transition: transform .7s var(--expo); }
-.tp:hover .tp__n { transform: translateX(12px); }
-.tp__r { font-size: 14px; color: var(--mute); line-height: 1.45; }
-.tp__c { display: grid; justify-items: end; gap: 2px; font-size: 14px; }
+.tg { margin-bottom: clamp(36px, 4vw, 56px); }
+.tg__n { font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: var(--gold-ink); margin-bottom: 18px; }
+.tg__list { list-style: none; margin: 0; padding: 0; columns: 2 240px; column-gap: clamp(28px, 3vw, 48px); }
+.tp { break-inside: avoid; padding: 0 0 26px; }
+.tp__n { display: block; font-size: clamp(22px, 1.9vw, 28px); font-weight: var(--w-display); letter-spacing: -.01em; color: var(--ink); line-height: 1.2; }
+.tp__r { display: block; font-size: 15px; color: var(--mute); line-height: 1.45; margin-top: 4px; }
+.tp__c { display: grid; justify-items: start; gap: 0; font-size: 15px; margin-top: 6px; }
 .tp__c a { color: var(--text); text-decoration: none; }
 .tp__c a:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--gold); text-underline-offset: 3px; }
 /* address band; the map takes its place on request */
@@ -490,9 +491,10 @@ html.lenis, html.lenis body { height: auto; }
   .mt__body { padding-inline: var(--gut); }
   .hx__ghost { display: none; }
   .hx__item:nth-child(even) { margin-top: 0; }
-  .hx__frame { height: auto; width: 72vw; aspect-ratio: 4 / 5; }
+  .hx__frame { height: auto; width: 78vw; aspect-ratio: 4 / 5; }
   .hx__img { width: 100%; margin-left: 0; }
-  .hx__cap { max-width: 72vw; }
+  .hx__cap { max-width: 78vw; }
+  .hx__viewport { -webkit-mask-image: linear-gradient(90deg, #000 84%, transparent); mask-image: linear-gradient(90deg, #000 84%, transparent); }
   .next { height: 82vh; }
   .hx__pin { min-height: 0; padding-block: clamp(72px, 12vw, 110px); }
   .hx__viewport { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -504,9 +506,7 @@ html.lenis, html.lenis body { height: auto; }
   .ctx { grid-template-columns: 1fr; }
   .ctx__media { position: relative; top: auto; height: 62vh; }
   .ctx__body { padding: 48px var(--gut) 72px; }
-  .tg { grid-template-columns: 1fr; }
-  .tp { grid-template-columns: 1fr; }
-  .tp__c { justify-items: start; margin-top: 6px; }
+
   .ft__in { grid-template-columns: 1fr; text-align: left; }
 }
 @media (max-width: 767px) {
@@ -517,6 +517,9 @@ html.lenis, html.lenis body { height: auto; }
   .bn__ctrl { margin-inline: auto; }
   .mosaic, .mosaic--tall { grid-template-columns: 1fr; row-gap: 40px; }
   .tile.s1, .tile.s2, .tile.s3 { grid-column: auto; }
+  .tile.s2 .tile__link, .tile.s3 .tile__link { margin-inline: calc(-1 * var(--gut)); }
+  .tile.s1 { width: 74%; }
+  .tile.s1:nth-child(even) { margin-left: auto; }
   .tile__link, .mosaic--tall .tile__link { height: auto; }
   .tile__img { height: auto; margin-top: 0; }
   .tile--video video { height: auto; aspect-ratio: 9 / 16; max-height: 80vh; margin-inline: auto; }
@@ -525,6 +528,8 @@ html.lenis, html.lenis body { height: auto; }
   .plate__meta { max-width: none; padding: 14px var(--gut) 0; }
   .form { grid-template-columns: 1fr; }
   .ct-ways { grid-template-columns: 1fr; }
+  .callout__big { display: block; }
+  .callout__arrow { display: inline-block; margin-left: .2em; vertical-align: .1em; }
   .ft__addr span { display: block; }
   .ft__addr .ft__sep { display: none; }
 }
