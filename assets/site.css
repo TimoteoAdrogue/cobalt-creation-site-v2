@@ -379,28 +379,28 @@ html.lenis, html.lenis body { height: auto; }
 /* ---------- lightbox ---------- */
 .lb { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #fff; color: var(--text); overflow: hidden; }
 .lb::backdrop { background: rgba(255, 255, 255, .98); }
-.lb[open] { display: grid; grid-template-columns: 1fr minmax(260px, 340px); animation: lb-in .6s var(--expo); }
+.lb[open] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); animation: lb-in .6s var(--expo); }
 @keyframes lb-in { from { opacity: 0; } }
-.lb__stage { position: relative; display: grid; place-items: center; padding: 72px 88px; min-height: 0; touch-action: pan-y; }
-.lb__stage img { max-width: 100%; max-height: calc(100dvh - 144px); width: auto; height: auto; object-fit: contain; transition: opacity .45s var(--ease), transform .8s var(--expo); }
+.lb__stage { position: relative; display: grid; place-items: center; padding: 48px clamp(24px, 4vw, 64px); min-height: 0; overflow: hidden; touch-action: pan-y; cursor: pointer; }
+.lb__stage img { grid-area: 1 / 1; max-width: 100%; max-height: calc(100dvh - 96px); width: auto; height: auto; object-fit: contain; transition: opacity .45s var(--ease); }
+.lb__stage img.lb__old { pointer-events: none; }
 .lb__stage img.is-loading { opacity: 0; transform: scale(.97); }
-.lb__meta { align-self: end; padding: 0 40px 56px 0; }
-.lb__count { font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); color: var(--mute); margin-bottom: 18px; }
+.lb__meta { align-self: end; padding: 0 clamp(28px, 3vw, 48px) 48px 0; }
+.lb__nav { display: flex; align-items: center; gap: 6px; margin: 30px 0 0 -14px; }
+.lb__count { min-width: 6ch; text-align: center; font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); color: var(--mute); }
 .lb__t { font-size: clamp(20px, 1.7vw, 26px); font-weight: var(--w-display); letter-spacing: var(--t-caps); text-transform: uppercase; color: var(--ink); line-height: 1.45; margin-bottom: 8px; }
 .lb__s { color: var(--mute); font-size: 15px; white-space: pre-line; }
 .lb__d { font-size: 15px; }
-.lb__btn { position: absolute; z-index: 2; border: 0; background: none; cursor: pointer; color: var(--ink); font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; padding: 14px; }
-.lb__close { top: 18px; right: 22px; }
-.lb__prev, .lb__next { top: 50%; translate: 0 -50%; font-size: 28px; letter-spacing: 0; width: 56px; height: 56px; }
-.lb__prev { left: 16px; }
-.lb__next { right: calc(min(340px, 30vw) + 8px); }
+.lb__btn { z-index: 2; border: 0; background: none; cursor: pointer; color: var(--ink); font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; padding: 14px; }
+.lb__close { position: absolute; top: 18px; right: 22px; }
+.lb__prev, .lb__next { display: inline-grid; place-items: center; padding: 0; font-size: 20px; line-height: 1; letter-spacing: 0; width: 48px; height: 48px; transition: transform .5s var(--expo); }
+.lb__prev:hover { transform: translateX(-4px); } .lb__next:hover { transform: translateX(4px); }
 @media (max-width: 900px) {
-  .lb[open] { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
-  .lb__stage { padding: 64px 16px 8px; }
-  .lb__stage img { max-height: calc(100dvh - 260px); }
-  .lb__meta { padding: 12px 20px 28px; align-self: start; }
-  .lb__next { right: 6px; } .lb__prev { left: 6px; }
-  .lb__prev, .lb__next { top: 40%; }
+  .lb[open] { grid-template-columns: 1fr; grid-template-rows: minmax(0, auto) auto; align-content: center; }
+  .lb__stage { padding: 60px 0 0; }
+  .lb__stage img { max-height: calc(100dvh - 270px); }
+  .lb__meta { padding: 16px var(--gut) 24px; align-self: start; }
+  .lb__nav { margin-top: 14px; }
 }
 
 /* ---------- contact: a photograph of an atelier beside the form ---------- */
@@ -535,10 +535,12 @@ html.lenis, html.lenis body { height: auto; }
 
 /* ---------- page transition: an ink curtain with the house's mark closes, the next page lifts it ---------- */
 .pt, html.pt-in::after { position: fixed; inset: 0; z-index: 200; pointer-events: none;
-  background: var(--ink) url("media/logo-cobalt-creme.png") center / clamp(120px, 11vw, 170px) auto no-repeat; }
-.pt { clip-path: inset(100% 0 0 0); animation: pt-cover .6s var(--expo) forwards; }
+  background: var(--paper) url("media/logo-cobalt.png") center / clamp(96px, 8vw, 136px) auto no-repeat; }
+.pt { clip-path: inset(100% 0 0 0); animation: pt-cover .4s var(--expo) forwards; }
 @keyframes pt-cover { to { clip-path: inset(0 0 0 0); } }
-html.pt-in::after { content: ""; animation: pt-lift .95s var(--expo) .2s forwards; }
+html.pt-in::after { content: ""; animation: pt-lift .6s var(--expo) .05s forwards; }
+/* the next-rubric photograph was carried over: the new page's title rises on the same picture */
+.next.is-leaving .next__in { opacity: 0; transform: translateY(-12px); transition: opacity .3s var(--ease), transform .4s var(--ease); }
 @keyframes pt-lift { to { clip-path: inset(0 0 100% 0); } }
 
 /* ---------- lightbox: the photograph opens from inside its frame ---------- */

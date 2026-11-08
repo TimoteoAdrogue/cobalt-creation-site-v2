@@ -389,14 +389,16 @@
       if (url.origin !== location.origin || !url.protocol.startsWith("http")) return;
       if (url.pathname === location.pathname && url.search === location.search) return;   // same page: anchors, works
       e.preventDefault();
-      try { sessionStorage.setItem("cc-pt", "1"); } catch (err) {}
+      const carry = a.classList.contains("next") && a.getBoundingClientRect().top < 2 && a.getBoundingClientRect().bottom > innerHeight - 2;
+      try { sessionStorage.setItem("cc-pt", carry ? "img" : "1"); } catch (err) {}
+      if (carry) { a.classList.add("is-leaving"); setTimeout(() => { location.href = url.href; }, 320); return; }
       const pt = document.createElement("div");
       pt.className = "pt"; pt.setAttribute("aria-hidden", "true");
       document.body.appendChild(pt);
-      setTimeout(() => { location.href = url.href; }, 560);
+      setTimeout(() => { location.href = url.href; }, 360);
     });
     // back/forward restores the page from memory with the curtain still drawn
-    addEventListener("pageshow", (e) => { if (e.persisted) $$(".pt").forEach((x) => x.remove()); });
+    addEventListener("pageshow", (e) => { if (e.persisted) { $$(".pt").forEach((x) => x.remove()); $$(".next.is-leaving").forEach((x) => x.classList.remove("is-leaving")); } });
   }
 
   /* ---------- AVIF probe (neighbour preloading in the lightbox) ---------- */
@@ -414,10 +416,14 @@
     const count = $(".lb__count", lb), t = $(".lb__t", lb), s = $(".lb__s", lb), d = $(".lb__d", lb);
     let cur = 0, opener = null, pushed = false;
     const preload = (k) => { const it = items[(k + items.length) % items.length]; const p = new Image(); p.src = avif ? it.avif : it.jpg; };
-    const show = (k) => {
+    const show = (k, dir = 0) => {
       cur = (k + items.length) % items.length;
       const it = items[cur];
-      img.classList.add("is-loading");
+      if (G && dir && lb.open && img.complete && img.naturalWidth) {
+        const old = img.cloneNode(); old.className = "lb__old"; old.removeAttribute("srcset"); img.after(old);
+        G.fromTo(old, { xPercent: 0, opacity: 1 }, { xPercent: -28 * dir, opacity: 0, duration: 0.7, ease: "power3.inOut", onComplete: () => old.remove() });
+        G.fromTo(img, { xPercent: 45 * dir, opacity: 0 }, { xPercent: 0, opacity: 1, duration: 0.7, ease: "power3.inOut" });
+      } else img.classList.add("is-loading");
       src.srcset = it.avif; img.src = it.jpg; img.alt = it.alt;
       count.textContent = `${cur + 1} / ${items.length}`;
       t.textContent = it.t; s.textContent = it.s; d.textContent = it.d;
@@ -449,13 +455,13 @@
       (back || opener)?.focus({ preventScroll: true });
     };
     links.forEach((a, k) => a.addEventListener("click", (e) => { e.preventDefault(); open(k); }));
-    $(".lb__prev", lb).addEventListener("click", () => show(cur - 1));
-    $(".lb__next", lb).addEventListener("click", () => show(cur + 1));
+    $(".lb__prev", lb).addEventListener("click", () => show(cur - 1, -1));
+    $(".lb__next", lb).addEventListener("click", () => show(cur + 1, 1));
     $(".lb__close", lb).addEventListener("click", () => close());
     lb.addEventListener("cancel", (e) => { e.preventDefault(); close(); });
     lb.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") { e.preventDefault(); show(cur + 1); }
-      if (e.key === "ArrowLeft") { e.preventDefault(); show(cur - 1); }
+      if (e.key === "ArrowRight") { e.preventDefault(); show(cur + 1, 1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); show(cur - 1, -1); }
     });
     addEventListener("popstate", () => {
       const m = location.hash.match(/^#piece-(\d+)$/);
@@ -468,7 +474,9 @@
     stage.addEventListener("pointerup", (e) => {
       if (e.pointerId !== sp) return; sp = null;
       const dx = e.clientX - sx, dy = e.clientY - sy;
-      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(cur + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(cur + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1);
+      // a tap steps through the series: left half back, right half forward
+      else if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { const r = stage.getBoundingClientRect(); const d = e.clientX < r.left + r.width / 2 ? -1 : 1; show(cur + d, d); }
     });
     const m = location.hash.match(/^#piece-(\d+)$/);
     if (m) { const k = items.findIndex((it) => it.n === +m[1]); if (k >= 0) { history.replaceState(null, "", location.pathname + location.search); open(k); } }

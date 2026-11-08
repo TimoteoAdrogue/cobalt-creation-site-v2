@@ -19,7 +19,7 @@
 <link rel="apple-touch-icon" href="../assets/media/apple-touch-icon.png">
 <link rel="preload" href="../assets/fonts/jost.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../assets/site.css">
-<script>document.documentElement.classList.add('js');try{if(sessionStorage.getItem('cc-pt')){sessionStorage.removeItem('cc-pt');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('pt-in')}}catch(e){}</script>
+<script>document.documentElement.classList.add('js');try{var pt=sessionStorage.getItem('cc-pt');if(pt){sessionStorage.removeItem('cc-pt');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add(pt==='img'?'pt-img':'pt-in')}}catch(e){}</script>
 <script src="../assets/vendor/gsap.min.js" defer></script>
 <script src="../assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="../assets/vendor/lenis.min.js" defer></script>
@@ -110,9 +110,8 @@
 </div>
 <dialog class="lb" data-lightbox aria-label="Réalisation agrandie" data-lenis-prevent>
   <div class="lb__stage"><picture><source type="image/avif"><img alt=""></picture></div>
-  <div class="lb__meta"><p class="lb__count" aria-live="polite"></p><h2 class="lb__t"></h2><p class="lb__s"></p><p class="lb__d"></p></div>
-  <button class="lb__btn lb__prev" type="button" aria-label="Réalisation précédente">&larr;</button>
-  <button class="lb__btn lb__next" type="button" aria-label="Réalisation suivante">&rarr;</button>
+  <div class="lb__meta"><h2 class="lb__t"></h2><p class="lb__s"></p><p class="lb__d"></p>
+    <p class="lb__nav"><button class="lb__btn lb__prev" type="button" aria-label="Réalisation précédente">&larr;</button><span class="lb__count" aria-live="polite"></span><button class="lb__btn lb__next" type="button" aria-label="Réalisation suivante">&rarr;</button></p></div>
   <button class="lb__btn lb__close" type="button">Fermer</button>
 </dialog>
 </body>

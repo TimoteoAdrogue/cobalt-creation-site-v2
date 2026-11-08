@@ -19,7 +19,7 @@ A = c.Assets(SITE)
 
 TITLES = {k: c.PAGES["pages"][k]["title"] for k in c.PAGES["pages"]}
 # decided before the first paint, so the opening never flashes the finished page first
-PT_SNIPPET = ";try{if(sessionStorage.getItem('cc-pt')){sessionStorage.removeItem('cc-pt');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('pt-in')}}catch(e){}"
+PT_SNIPPET = ";try{var pt=sessionStorage.getItem('cc-pt');if(pt){sessionStorage.removeItem('cc-pt');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add(pt==='img'?'pt-img':'pt-in')}}catch(e){}"
 INTRO_SNIPPET = ";try{if(!sessionStorage.getItem('cc-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('is-opening')}catch(e){}"
 DESCS = {k: c.PAGES["pages"][k]["description"] for k in c.PAGES["pages"]}
 LABEL = dict(c.NAV)
@@ -210,9 +210,8 @@ def page(slug, main, body_cls, lightbox=False, over_hero=True, end=""):
     if lightbox:
         lb = """<dialog class="lb" data-lightbox aria-label="Réalisation agrandie" data-lenis-prevent>
   <div class="lb__stage"><picture><source type="image/avif"><img alt=""></picture></div>
-  <div class="lb__meta"><p class="lb__count" aria-live="polite"></p><h2 class="lb__t"></h2><p class="lb__s"></p><p class="lb__d"></p></div>
-  <button class="lb__btn lb__prev" type="button" aria-label="Réalisation précédente">&larr;</button>
-  <button class="lb__btn lb__next" type="button" aria-label="Réalisation suivante">&rarr;</button>
+  <div class="lb__meta"><h2 class="lb__t"></h2><p class="lb__s"></p><p class="lb__d"></p>
+    <p class="lb__nav"><button class="lb__btn lb__prev" type="button" aria-label="Réalisation précédente">&larr;</button><span class="lb__count" aria-live="polite"></span><button class="lb__btn lb__next" type="button" aria-label="Réalisation suivante">&rarr;</button></p></div>
   <button class="lb__btn lb__close" type="button">Fermer</button>
 </dialog>"""
     html = f"""{head(slug)}
@@ -302,7 +301,8 @@ def build_home():
             m = c.MEDIA_INDEX[w["media"]]
             ar = m["w"] / m["h"]
             pic = A.picture(w["media"], b, f"(max-width: 900px) 80vw, calc(62vh * {ar * 1.16:.2f})", alt=c.work_alt(w), cls="hx__img")
-            items.append(f'<li class="hx__item" style="--ar:{ar:.3f}"><a href="{link(slug, s)}#piece-{n}"><span class="hx__frame">{pic}</span>'
+            _, data, _ = work_bits(w, len(items) + 1, b)
+            items.append(f'<li class="hx__item" style="--ar:{ar:.3f}"><a href="{link(slug, s)}#piece-{n}" data-lb="{len(items) + 1}" data-item=\'{esc(data)}\'><span class="hx__frame">{pic}</span>'
                          f'<span class="hx__cap"><span class="hx__t">{esc(ln[0])}</span><span class="hx__s">{esc(" · ".join(ln[1:]))}</span>'
                          f'<span class="hx__r">{esc(LABEL[s])}</span></span></a></li>')
     rubric_links = "".join(f'<li><a href="{link(slug, s)}">{esc(LABEL[s])}</a></li>' for s in c.RUBRICS)
@@ -375,7 +375,7 @@ def build_home():
   </div>
   <div class="wrap trust__grid" aria-hidden="true">{grid}</div>
 </section>"""
-    page(slug, top + manifest + frame + metiers + works + trust + book, "p-home", end=contact_band(slug))
+    page(slug, top + manifest + frame + metiers + works + trust + book, "p-home", lightbox=True, end=contact_band(slug))
 
 
 def work_bits(w, n, b):
