@@ -52,7 +52,6 @@ html.lenis, html.lenis body { height: auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0; }
 .skip { position: absolute; left: 12px; top: -60px; z-index: 60; background: var(--ink); color: #fff; padding: 10px 16px; text-decoration: none; }
 .skip:focus { top: 12px; }
-.t-up { text-transform: uppercase; letter-spacing: .14em; font-weight: 400; line-height: 1.3; }
 .h-sec { font-size: clamp(30px, 3.2vw, 52px); font-weight: var(--w-display); text-transform: uppercase; letter-spacing: var(--t-caps); line-height: 1.02; }
 .eyebrow { font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: var(--gold-ink); margin: 0 0 40px; }
 
@@ -220,9 +219,7 @@ html.lenis, html.lenis body { height: auto; }
 
 /* ---------- réalisations: pinned horizontal gallery ---------- */
 .hx__pin { position: relative; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; justify-content: flex-start; gap: clamp(22px, 3.4vh, 40px); padding-block: calc(var(--hd) + 5vh) 28px; overflow: hidden; }
-.hx__ghost { position: absolute; left: 0; bottom: -.12em; z-index: 0; white-space: nowrap; pointer-events: none; user-select: none;
-  display: none; }
-.hx__head, .hx__viewport, .hx__bar { position: relative; z-index: 1; }
+.hx__head, .hx__viewport { position: relative; z-index: 1; }
 .hx__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px 32px; }
 .hx__rubrics { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 26px; margin: 0; padding: 0; }
 .hx__rubrics a { font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: .16em; text-transform: uppercase; color: var(--mute); text-decoration: none; }
@@ -238,23 +235,6 @@ html.lenis, html.lenis body { height: auto; }
 .hx__item a:hover .hx__t { background-size: 100% 1px; }
 .hx__s { display: block; font-size: 15px; color: var(--mute); line-height: 1.5; margin-top: 2px; }
 .hx__r { display: block; font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; color: var(--gold-ink); margin-top: 8px; }
-
-/* ---------- F4 book: turns in 3D with the scroll ---------- */
-.book { background: var(--ink); color: var(--cream); overflow: hidden; }
-.book__in { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); align-items: center; gap: clamp(32px, 6vw, 96px); padding-block: clamp(110px, 14vw, 200px); }
-.book__cover { perspective: 1600px; display: grid; place-items: center; }
-.book__obj { position: relative; width: min(100%, 440px); transform-style: preserve-3d; transform: rotateY(-24deg) rotateX(4deg); will-change: transform; }
-.book__obj img { width: 100%; box-shadow: 0 60px 90px -40px rgba(0, 0, 0, .65); }
-.book__edge { position: absolute; top: 1%; right: 0; width: 18px; height: 98%; transform-origin: 100% 50%; transform: rotateY(90deg);
-  background: repeating-linear-gradient(90deg, #f6f3ee 0 1px, #d9d3c8 1px 2px); }
-.book .h-sec { color: var(--cream); margin-bottom: 36px; }
-.book__btn {
-  display: inline-flex; align-items: center; gap: 18px; padding: 18px 30px; border: 1px solid var(--gold); color: var(--cream); text-decoration: none;
-  font-size: var(--s-label); font-weight: var(--w-label); letter-spacing: var(--t-label); text-transform: uppercase; transition: background-color .5s var(--ease), color .5s var(--ease);
-}
-.book__btn:hover { background: var(--gold); color: var(--ink); }
-.book__btn:focus-visible { outline-color: var(--gold); }
-.book__meta { display: block; margin-top: 18px; font-size: 13px; color: #9FB2BF; }
 
 /* ---------- F5 trust: two-row marquee that answers the scroll ---------- */
 .trust { padding-top: clamp(100px, 12vw, 170px); overflow: hidden; }
@@ -489,7 +469,6 @@ html.lenis, html.lenis body { height: auto; }
   .mt__item { min-height: 0; display: block; padding: 0 0 clamp(56px, 12vw, 80px); }
   .mt__ph { display: block; height: 72svh; max-height: 640px; overflow: hidden; margin-bottom: 30px; }
   .mt__body { padding-inline: var(--gut); }
-  .hx__ghost { display: none; }
   .hx__item:nth-child(even) { margin-top: 0; }
   .hx__frame { height: auto; width: 78vw; aspect-ratio: 4 / 5; }
   .hx__img { width: 100%; margin-left: 0; }
@@ -500,9 +479,6 @@ html.lenis, html.lenis body { height: auto; }
   .hx__viewport { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   .hx__viewport::-webkit-scrollbar { display: none; }
   .hx__item { scroll-snap-align: center; }
-  .hx__bar { display: none; }
-  .book__in { grid-template-columns: 1fr; text-align: center; }
-  .book__obj { width: min(74%, 360px); margin-inline: auto; }
   .ctx { grid-template-columns: 1fr; }
   .ctx__media { position: relative; top: auto; height: 62vh; }
   .ctx__body { padding: 48px var(--gut) 72px; }
