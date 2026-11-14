@@ -18,9 +18,6 @@ DESCS = {k: c.PAGES["pages"][k]["description"] for k in c.PAGES["pages"]}
 LABEL = dict(c.NAV)
 NEXT = {"creation-d-objet-unique": "ateliers-de-personnalisation", "ateliers-de-personnalisation": "design-graphique-design-papier",
         "design-graphique-design-papier": "coffrets-packaging", "coffrets-packaging": "creation-d-objet-unique"}
-# page transition: decided before the first paint, from a flag set by the page we came from
-# ('nx': the visitor clicked the next-rubric panel, which already showed this page's opening frame: no curtain)
-PT_SNIPPET = ";try{var f=sessionStorage.getItem('cc-pt');if(f){sessionStorage.removeItem('cc-pt');if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add(f==='nx'?'pt-nx':'pt-in')}}catch(e){}"
 # ---------- V3-only sharp derivatives ----------
 # Cut from the client's originals in src-media/ and written only to site-v3/assets/media/v3-*. Never graded: resized,
 # and cropped where a slot shows only part of a panorama. Kept between builds (re-encoding takes minutes).
@@ -79,36 +76,91 @@ def ratio(name):
     return m["w"] / m["h"]
 
 
-# the photograph that leads each rubric's run on the home page (an editorial pick among the client's own works)
-HOME_LEAD = {"ateliers-de-personnalisation": 2,   # Dior / Xmas Parties 2024
-             "coffrets-packaging": 1,             # Guerlain / Holidays 2024, strass
-             "design-graphique-design-papier": 1, # Guerlain / Néroli Plein Sud
-             "creation-d-objet-unique": 1}        # La Gravure
-# each rubric page opens full screen on one of the client's photographs, cut (never graded) to the screen's shape:
-# (source, wide crop ~16:10, tall crop ~4:5, title corner); the previous page's « next rubric » panel shows the same frame
+def mid(i12):
+    """The source file in src-media/ of a photograph, by the 12 first hex digits of its id."""
+    return next(p.name for p in sorted((ROOT / "src-media").iterdir()) if i12 in p.name)
+
+
+def work_of(i12):
+    """The client's own work (and so its verbatim title) behind a photograph, if any."""
+    return next((w for w in c.WORKS if i12 in w["media"]), None)
+
+
+def src_size(name):
+    im = Image.open(ROOT / "src-media" / name)
+    w, h = im.size
+    return (h, w) if im.getexif().get(0x0112, 1) in (5, 6, 7, 8) else (w, h)
+
+
+def tone(name, crop=None):
+    """'light' or 'dark' for the strips of a full-bleed photograph that the top bar sits on (its left logo, its right
+    links): the bar takes ink over a light photograph, cream over a dark one. Measured once on a small copy."""
+    im = ImageOps.exif_transpose(Image.open(ROOT / "src-media" / name)).convert("L")
+    if crop:
+        W, H = im.size
+        im = im.crop((round(crop[0] * W), round(crop[1] * H), round(crop[2] * W), round(crop[3] * H)))
+    im.thumbnail((400, 400))
+    W, H = im.size
+    out = []
+    lum = lambda v: ((v / 255 + .055) / 1.055) ** 2.4 if v > 10 else v / 255 / 12.92
+    ratio = lambda a, b: (max(a, b) + .05) / (min(a, b) + .05)
+    # where the logo and the links fall on the photograph as it is drawn full screen (cover, 110 % tall) at 1440 x 900
+    vw, vh = 1440, 990
+    sc = max(vw / W, vh / H)
+    fx = lambda x: (x + (W * sc - vw) / 2) / (W * sc)
+    fy = lambda y: (y + 45 + (H * sc - vh) / 2) / (H * sc)
+    for x0, x1 in ((fx(40), fx(190)), (fx(1100), fx(1400))):
+        band = im.crop((round(x0 * W), round(fy(10) * H), round(x1 * W), round(fy(66) * H)))
+        L = sum(lum(v) for v in band.getdata()) / (band.width * band.height)
+        out.append("light" if ratio(L, .0348) > ratio(L, .852) else "dark")   # ink #02374F against cream #F3EEE4
+    return out
+
+
+def mean_colour(name, crop=None):
+    """The photograph's own average colour: the ground of its frame, so a frame never shows a foreign colour."""
+    im = ImageOps.exif_transpose(Image.open(ROOT / "src-media" / name)).convert("RGB")
+    if crop:
+        W, H = im.size
+        im = im.crop((round(crop[0] * W), round(crop[1] * H), round(crop[2] * W), round(crop[3] * H)))
+    im.thumbnail((64, 64))
+    n = im.width * im.height
+    return "#%02x%02x%02x" % tuple(round(sum(px[k] for px in im.getdata()) / n) for k in range(3))
+
+
+HOLD = ' data-hold onload="var i=this;(i.decode?i.decode():Promise.resolve()).then(function(){i.dataset.ready=1},function(){i.dataset.ready=1})" onerror="this.dataset.ready=1"'
+
+
+# round 2: every rubric opens on its strongest photograph at full light, never graded nor tinted:
+# (source id, wide crop ~16:10, tall crop ~4:5). The previous page's « next rubric » panel shows the same frame.
 OPEN = {
-    "creation-d-objet-unique": ("53e2f6_beea44379bf74660a11e63a464da50fe~mv2.jpg", (0, .031, 1, .969), (.33, 0, .86, 1), "bl"),
-    "ateliers-de-personnalisation": ("53e2f6_fc0048d91a964b30b9bd7db34361105c~mv2_d_10071_2146_s_2.jpg", (.41, 0, .75, 1), (.555, 0, .725, 1), "bl"),
-    "design-graphique-design-papier": (None, (0, .0625, 1, .9375), (.16, 0, .73, 1), "bl"),
-    "coffrets-packaging": ("53e2f6_bf50eca92f9a422ab12ecdffb54ec9d1~mv2.jpg", (.33, 0, .762, 1), (.39, 0, .61, 1), "bl"),
+    "creation-d-objet-unique": ("beea44379bf7", (0, .031, 1, .969), (.33, 0, .86, 1)),          # gold-leaf coasters (live banner)
+    "ateliers-de-personnalisation": ("ed1e4c8ec7b2", (0, .19, 1, .81), (.1, 0, .9, 1)),         # Givenchy, hands engraving
+    "design-graphique-design-papier": ("dd7d7397eb9f", (0, .0625, 1, .9375), (.16, 0, .73, 1)),  # Guerlain, Néroli Plein Sud
+    "coffrets-packaging": ("fb314fe1673a", (0, .19, 1, .81), (.1, 0, .9, 1)),                   # Martell, sunburst case
 }
 
 
 def opening(slug, b, cls="", eager=False):
-    """The rubric's full-screen opening frame: a wide crop for screens, a tall crop for phones."""
-    name, wide, tall, _ = OPEN[slug]
-    name = name or c.works(slug)[1]["media"]            # design: Guerlain / Néroli Plein Sud
-    fw = derive(name, (960, 1440, 1920, 2880), wide, "w", q=60)
+    """The rubric's full-screen opening frame (drift slack 110 %): a wide crop for screens, a tall crop for phones."""
+    i12, wide, tall = OPEN[slug]
+    name = mid(i12)
+    fw = derive(name, (960, 1440, 1920, 2560, 3200), wide, "w", q=60)
     ft = derive(name, (600, 900, 1200, 1600), tall, "t", q=60)
     arw, art = fw[-1]["w"] / fw[-1]["h"], ft[-1]["w"] / ft[-1]["h"]
     srcs = lambda fs, k: ", ".join(f"{b}assets/media/{f[k]} {f['w']}w" for f in fs)
-    sw, st = cover("100vw", "100vh", arw), cover("100vw", "72vh", art)
-    load = 'loading="eager" fetchpriority="high"' if eager else 'loading="lazy"'
+    sw, st = cover("100vw", "110vh", arw), cover("100vw", "110vh", art)
+    load = ('loading="eager" fetchpriority="high"' + HOLD) if eager else 'loading="lazy"'
     k = f' class="{cls}"' if cls else ""
     return (f'<picture><source media="(max-width: 767px)" type="image/avif" srcset="{srcs(ft, "avif")}" sizes="{st}">'
             f'<source media="(max-width: 767px)" srcset="{srcs(ft, "jpg")}" sizes="{st}">'
             f'<source type="image/avif" srcset="{srcs(fw, "avif")}" sizes="{sw}">'
             f'<img{k} src="{b}assets/media/{fw[1]["jpg"]}" srcset="{srcs(fw, "jpg")}" sizes="{sw}" width="{fw[-1]["w"]}" height="{fw[-1]["h"]}" alt="" {load} decoding="async"></picture>')
+
+
+def opening_tone(slug):
+    i12, wide, _ = OPEN[slug]
+    l, r = tone(mid(i12), wide)
+    return f'data-tone-l="{l}" data-tone-r="{r}" style="background-color:{mean_colour(mid(i12), wide)}"'
 
 
 FINISHES = [("foil", "Marquage à chaud"), ("gravure", "Gravure"), ("emboss", "Embossage"), ("leaf", "Feuille d’or")]
@@ -141,6 +193,7 @@ def head(slug):
 <link rel="canonical" href="https://www.cobaltcreation.com/{slug}">
 <meta name="theme-color" content="#02374F">
 <meta name="color-scheme" content="dark">
+<style>html{{background:#02374F}}</style>
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:site_name" content="Cobalt Création">
@@ -153,7 +206,7 @@ def head(slug):
 <link rel="preload" href="{b}assets/fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="{b}assets/fonts/bodonimoda.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{b}assets/site.css">
-<script>document.documentElement.classList.add('js'){PT_SNIPPET}</script>
+<script>document.documentElement.classList.add('js');addEventListener('pagereveal',function(){{document.querySelectorAll('img[data-hold]').forEach(function(i){{if(i.complete&&i.naturalWidth)i.dataset.ready=1}})}})</script>
 <script src="{b}assets/vendor/gsap.min.js" defer></script>
 <script src="{b}assets/vendor/ScrollTrigger.min.js" defer></script>
 <script src="{b}assets/vendor/lenis.min.js" defer></script>
@@ -302,66 +355,170 @@ def build_home():
   </div>
 </section>"""
 
-    # gestes: the signature techniques, from « Nos ateliers signatures ». The photograph is the room (62 % of the
-    # width, falling off into ink under the index); the index is Geist, the active name Bodoni italic.
+    h = c.home()
+    page(slug, hero + techniques() + '<div class="paper" data-paper data-tone-l="light" data-tone-r="light">' + bridge(BRIDGE_IN, "bridge--in")
+         + reals() + maisons() + book() + "</div>" + bridge(BRIDGE_OUT, "bridge--out") + crew(), "p-home", viewer=True)
+
+
+# ---------------------------------------------------------------- round 2: photographs by strength, frames that move
+# The ten techniques are the client's, in the client's order; each is illustrated by the client's strongest photograph
+# OF THAT TECHNIQUE, credited with that work's own verbatim title. (id, focal point for the crop, or "mount": the card
+# contained on its own white, never enlarged)
+TECH_PHOTO = [
+    ("7d8c4d932316", "46% 50%"),   # La Gravure            <- Guerlain, Pièce unique - Gravure et mise en couleur or
+    ("396411c5f961", "40% 50%"),   # La feuille d'or       <- Glenmorangie, Pièce unique - Gravure et feuille d'or
+    ("1b5254f09cf6", "62% 50%"),   # L'illustration        <- Dessines moi un jardin, Illustration sur mesure
+    ("522f2b9f472d", "50% 50%"),   # L'embossage et la dorure à chaud <- Éditions Cobalt Création, Carnet 2025
+    ("2334ebd14cda", "64% 56%"),   # La peinture           <- Lalique, Édition Limitée - Peinture
+    ("844fbc42bf78", "50% 50%"),   # La broderie           <- La Mer, Atelier retail - Broderie
+    ("667ceae7bab3", "mount"),     # L'aérographe          <- its own card (1980 px)
+    ("cfab69ee828b", "58% 50%"),   # La calligraphie       <- its own card
+    ("21ebdcbfb258", "50% 40%"),   # Atelier Floral        <- Guerlain, Xmas 2024, Couronne strassée
+    ("74d21afe5a7d", "50% 50%"),   # Les Ateliers Participatifs <- Guerlain, Abeille Royale, Atelier Participatif
+]
+BRIDGE_IN = "beea44379bf7"    # gold-leaf coasters on beige, 5178 px: the screen it covers turns from ink to paper
+BRIDGE_OUT = "430ff5e51a03"   # hands painting the gold « 44 » on black, 3213 px: from paper back to ink
+# home works: the strongest of each rubric first, nothing the techniques already show, no campaign images, no strips
+RUN = {
+    "ateliers-de-personnalisation": ["63471216a14a", "ed1e4c8ec7b2", "6cf80f2f42c2", "ee0a7756216d", "0a2355af026d", "5cfc64452c58", "7369d54d1d91"],
+    "coffrets-packaging": ["fb314fe1673a", "2dc7671ed236", "e81a1d324247", "d891365d6708", "e5e0e67bc490", "126ffdf4c747", "12fe601dc645"],
+    "design-graphique-design-papier": ["dd7d7397eb9f", "13d0253e40a6", "bf5377469999", "40a8eebbf9c0", "bb5da38813c2", "fc2e3c663458", "bc37da75fd60"],
+}
+# never a lead (photo audit: weak, a brand's campaign image, or an empty room): shown in pairs only
+WEAK = {"04ea566d7594", "33b50297bcb6", "43122bdde558", "7ea76c0f7e48", "8b00aacc5f59", "b490ba684c8c", "b8a227d0afb9",
+        "c43d20aaf56c", "f410312b0ce8", "1727f5903b42", "afd5abd662e7"}
+BOOK_PAGES = ("hi-01", "hi-07", "hi-04", "hi-31")   # cover, then three inside pages the client prizes (no repeat of a plate)
+RUN_W = (800, 1280, 1920)
+
+
+def border_colour(name):
+    im = ImageOps.exif_transpose(Image.open(ROOT / "src-media" / name)).convert("RGB")
+    im.thumbnail((300, 300)); W, H = im.size; px = im.load()
+    e = [px[x, y] for x in range(W) for y in range(H) if x < W * .04 or x > W * .96 or y < H * .04 or y > H * .96]
+    import statistics   # the median: the object's dark parts touching the edge must not grey the field
+    return "#%02x%02x%02x" % tuple(int(statistics.median(q[k] for q in e)) for k in range(3))
+
+
+def techniques():
     techs = [w for w in c.works("creation-d-objet-unique") if c.work_lines(w)]
-    media, items = [], []
-    for i, w in enumerate(techs):
-        on = ' class="is-on"' if i == 0 else ' class="is-next"' if i == 1 else ""
-        ar = ratio(w["media"])
-        wide = "100vw" if i == len(techs) - 1 else "62vw"      # the last one widens over the screen
-        sizes = f"(max-width: 900px) {cover('100vw', '52vh', ar)}, {cover(wide, '100vh', ar)}"
-        media.append(f'<figure data-g="{i}"{on}>{pic(w["media"], b, sizes, alt="")}</figure>')
-        name = esc(c.work_lines(w)[0])
-        items.append(f"""<li class="geste{' is-on' if i == 0 else ''}" data-g="{i}">
-        <h3><span class="geste__s">{name}</span><span class="geste__d" aria-hidden="true">{name}</span></h3>
-        <p>{esc(c.work_desc(w))}</p>
-      </li>""")
-    intro_sig = c.intro("creation-d-objet-unique")[0]
-    gestes = f"""<section class="sec gestes" aria-labelledby="gestes-t" data-gx>
-  <div class="wrap">
-    <div class="sec__head" data-settle>
-      <h2 id="gestes-t" class="dc split">{esc(LABEL['creation-d-objet-unique'])}</h2>
-      <p class="lede">{esc(intro_sig)}</p>
-    </div>
-  </div>
-  <div class="gestes__body">
-    <div class="gestes__media" aria-hidden="true">{''.join(media)}<span class="fo fo--left"></span><span class="gestes__veil" data-g-veil></span></div>
-    <div class="gestes__listwrap">
-      <div class="gestes__inner"><p class="gestes__count" aria-hidden="true"><span data-g-count>01</span> / {len(techs):02d}</p><ul class="gestes__list">{''.join(items)}</ul>
-        <p class="gestes__desc" aria-hidden="true" data-g-desc>{esc(c.work_desc(techs[0]))}</p>
-        <p class="gestes__more"><a class="link" href="creation-d-objet-unique/">{esc(LABEL['creation-d-objet-unique'])} <span aria-hidden="true">&rarr;</span></a></p></div></div>
+    assert len(techs) == len(TECH_PHOTO) == 10
+    items = []
+    for i, (w, (i12, fp)) in enumerate(zip(techs, TECH_PHOTO)):
+        name = mid(i12)
+        sw, sh = src_size(name)
+        own = work_of(i12)
+        credit = "" if own is w or own is None or not c.work_lines(own) else " · ".join(c.work_lines(own))
+        if fp == "mount":   # contained inside a field of the photograph's own white: the card at its own size
+            fig = (f'<figure class="tq__f tq__f--mount" data-flat-ok style="--mount:{border_colour(name)}">'
+                   f'{pic(name, "", "(max-width: 900px) 84vw, 47vw", widths=(800, 1280, 1980), alt="")}</figure>')
+        else:               # the frame is (100vw - index column) x 100vh; the image is 112 % tall (drift slack)
+            sizes = f"(max-width: 900px) {cover('100vw', '62vh', sw / sh)}, {cover('58vw', '112vh', sw / sh)}"
+            fig = f'<figure class="tq__f" style="--fp:{fp};background-color:{mean_colour(name)}">{pic(name, "", sizes, alt="")}</figure>'
+        cr = f'<p class="tq__cr">{esc(credit)}</p>' if credit else ""
+        items.append(f'<li class="tq__item" style="--row:{i + 2}" data-i="{i}">{fig}'
+                     f'<h3 class="tq__n"><button type="button" data-tq-go="{i}">{esc(c.work_lines(w)[0])}</button></h3>'
+                     f'<div class="tq__d"><p>{esc(c.work_desc(w))}</p>{cr}</div></li>')
+    return f"""<section class="tq" aria-labelledby="tq-t" data-tq data-warm data-tone-l="dark" data-tone-r="dark">
+  <div class="tq__stage" data-tq-stage>
+    <header class="tq__head" data-tq-head><h2 id="tq-t" class="dc">{esc(LABEL['creation-d-objet-unique'])}</h2><p class="lede">{esc(c.intro('creation-d-objet-unique')[0])}</p></header>
+    <ol class="tq__list">{''.join(items)}</ol>
+    <p class="tq__more"><a class="link" href="creation-d-objet-unique/">{esc(LABEL['creation-d-objet-unique'])} <span aria-hidden="true">&rarr;</span></a></p>
   </div>
 </section>"""
 
-    # réalisations, filter folded into the heading: one editorial run per rubric (a lead and six, ratio-true,
-    # captions under the photograph); the rubric page keeps the whole catalogue
-    order = ["ateliers-de-personnalisation", "coffrets-packaging", "design-graphique-design-papier", "creation-d-objet-unique"]
-    default = "ateliers-de-personnalisation"
+
+def bridge(i12, cls):
+    name = mid(i12)
+    sw, sh = src_size(name)
+    l, r = tone(name)
+    # the bridges dissolve into their ground by design (their last fifth is that ground): the motion gates check them
+    # for loading only when they paint flat ([data-flat-ok])
+    return (f'<div class="bridge {cls}" data-bridge data-warm data-tone-l="{l}" data-tone-r="{r}" aria-hidden="true"><figure class="bridge__f" data-flat-ok>'
+            f'{pic(name, "", cover("100vw", "116vh", sw / sh), widths=(1280, 1920, 2560, 3200), alt="")}</figure></div>')
+
+
+def run_cell(w, n, slot, b, href, anchor=False):
+    """One work of a spread. Its frame never draws the photograph beyond its file at DPR 2 (--cap, drift included)."""
+    sw, sh = src_size(w["media"])
+    ar = sw / sh
+    cap = round(min(max(RUN_W), sw) / 2.16)
+    if slot == "lead":
+        sizes = f"(max-width: 767px) 100vw, min(58vw, {84 * ar * 1.08:.1f}vh, {round(cap * 1.08)}px)"
+    elif slot == "strip":
+        sizes = f"(max-width: 767px) 100vw, min(100vw, {round(cap * 1.08)}px)"
+    else:
+        sizes = f"(max-width: 767px) 100vw, min(50vw, {round(cap * 1.08)}px)"
+    lines = c.work_lines(w)
+    cap_html = (f'<figcaption><span class="cap__t">{esc(lines[0])}</span>' if lines else "<figcaption>") \
+        + (f'<span class="cap__s">{esc(" · ".join(lines[1:]))}</span>' if len(lines) > 1 else "") \
+        + (f'<span class="cap__d">{esc(c.work_desc(w))}</span>' if slot == "lead" and c.work_desc(w) else "") + "</figcaption>"
+    label = c.work_alt(w) or f"Réalisation {n}"
+    idattr = f' id="piece-{n}"' if anchor else ""
+    return (f'<figure class="rl rl--{slot}"{idattr} style="--ar:{ar:.3f};--cap:{cap}px"><a class="rl__a" style="background-color:{mean_colour(w["media"])}" href="{href}" data-view=\'{esc(item_data(w, b, n))}\' aria-label="Agrandir : {esc(label)}">'
+            f'{pic(w["media"], b, sizes, widths=RUN_W, alt=label)}</a>{cap_html if lines or c.work_desc(w) else ""}</figure>')
+
+
+def shape_of(w):
+    sw, sh = src_size(w["media"])
+    ar = sw / sh
+    if ar > 2.2:
+        return "s"
+    # a lead gives its free columns to its caption: a work the client did not caption is never one
+    return "l" if c.work_lines(w) and min(sw, sh) >= 1500 and .6 <= ar <= 1.7 and not any(k in w["media"] for k in WEAK) else "p"
+
+
+def spreads(ws, b, cell, attrs=""):
+    """Decided rows: a lead (left, then mirrored), a pair at one height, ... Strips get a row of their own at their
+    own size. Client order is kept, except that a lead slot takes the next lead-worthy work among the next three."""
+    q, rows, side, last = list(ws), [], "l", None
+    while q:
+        if shape_of(q[0][1]) == "s":
+            n, w = q.pop(0)
+            rows.append(f'<div class="sp sp--s"{attrs}>{cell(w, n, "strip")}</div>')
+            last = "strip"
+            continue
+        j = next((k for k in range(min(3, len(q))) if shape_of(q[k][1]) == "l"), None) if last != "lead" else None
+        if j is not None:
+            n, w = q.pop(j)
+            rows.append(f'<div class="sp sp--{side}"{attrs}>{cell(w, n, "lead")}</div>')
+            side, last = ("r" if side == "l" else "l"), "lead"
+            continue
+        two = [q.pop(0)]
+        if q and shape_of(q[0][1]) != "s":
+            two.append(q.pop(0))
+        tot = sum(src_size(w["media"])[0] / src_size(w["media"])[1] for _, w in two)
+        rows.append(f'<div class="sp sp--p"{attrs} style="--sum:{tot:.3f}">{"".join(cell(w, n, "pair") for n, w in two)}</div>')
+        last = "pair"
+    return "".join(rows)
+
+
+def reals():
+    order = list(RUN)
+    default = order[0]
     tabs = "".join(f'<button type="button" data-f="{s}" aria-pressed="{"true" if s == default else "false"}">{esc(LABEL[s])}</button>' for s in order)
-    cells, n = [], 0
+    rows, n = [], 0
     for s in order:
-        ws = c.works(s)
-        lead = ws[HOME_LEAD[s]]
-        for k, w in enumerate([lead] + [x for x in ws if x is not lead][:6]):
-            n += 1
-            hidden = "" if s == default else " hidden"
-            ar = ratio(w["media"])
-            pic_ = A.picture(w["media"], b, "(max-width: 767px) 92vw, 50vw" if k == 0 else "(max-width: 767px) 46vw, 34vw", alt=c.work_alt(w) or f"Réalisation {n}")
-            cells.append(f'<figure class="rl" data-p="{s}" data-s="{k}" style="--ar:{ar:.3f}"{hidden}><a href="{link(slug, s)}#piece-{ws.index(w) + 1}" data-view=\'{esc(item_data(w, b, n))}\'>{pic_}</a>{caption(w)}</figure>')
-    reals = f"""<section class="sec reals" aria-labelledby="reals-t">
+        ws = [next(w for w in c.works(s) if k in w["media"]) for k in RUN[s]]
+        hid = "" if s == default else " hidden"
+        cell = lambda w, k, slot, s=s: run_cell(w, k, slot, "", f'{s}/#piece-{c.works(s).index(w) + 1}')
+        nws = [(n + i + 1, w) for i, w in enumerate(ws)]
+        n += len(ws)
+        rows.append(spreads(nws, "", cell, f' data-p="{s}" data-warm{hid}'))
+    return f"""<section class="reals" aria-labelledby="reals-t">
   <div class="wrap">
-    <div class="reals__head" data-settle>
+    <div class="reals__head">
       <h2 id="reals-t" class="dc split">Réalisations</h2>
       <div class="reals__tabs" role="group" aria-label="Choisir une rubrique">{tabs}</div>
-      <p class="reals__more"><a class="link" data-reals-link href="{link(slug, default)}">Voir la page <span data-reals-label>{esc(LABEL[default])}</span> <span aria-hidden="true">&rarr;</span></a></p>
+      <p class="reals__more"><a class="link" data-reals-link href="{default}/">Voir la page <span data-reals-label>{esc(LABEL[default])}</span> <span aria-hidden="true">&rarr;</span></a></p>
     </div>
   </div>
-  <div class="run" data-reals>{''.join(cells)}</div>
+  <div class="run run--sp" data-reals>{''.join(rows)}</div>
 </section>"""
 
-    # maisons: a foil sample board. The marks are pressed into a lit gold-leaf surface in ink, each scaled to the same
-    # visual weight (ink area measured once on the client's own logo cut-outs)
+
+def maisons():
+    """The 56 marks in ink at one optical weight on the paper lit to a gold field (ink area measured once on the
+    client's own logo cut-outs). No texture, no vignette, no filter."""
     import statistics
     weights = []
     for l in c.LOGOS:
@@ -370,49 +527,59 @@ def build_home():
         sc = min(16 / w0, 9 / h0)                       # mask-size: contain in a 16:9 cell
         weights.append((sum(im.getchannel("A").getdata()) / 255 * sc * sc, min(16 / (w0 * sc), 9 / (h0 * sc))))
     med = statistics.median(x[0] for x in weights)
-    logo_items = []
+    items = []
     for i, l in enumerate(c.LOGOS):
         A.file("logos/" + l["file"])
         url = "assets/media/logos/" + l["file"]
         ink, room = weights[i]
         k = max(0.6, min((med / ink) ** 0.5, 1.18 * room))
-        logo_items.append(f'<li><span class="logo" role="img" aria-label="{esc(l["name"])}" style="--k:{k:.2f};-webkit-mask-image:url({url});mask-image:url({url})"></span></li>')
-    logos = "".join(logo_items)
-    maisons = f"""<section class="sec maisons" aria-labelledby="maisons-t">
+        items.append(f'<li><span class="logo" role="img" aria-label="{esc(l["name"])}" style="--k:{k:.2f};-webkit-mask-image:url({url});mask-image:url({url})"></span></li>')
+    return f"""<section class="sec maisons" aria-labelledby="maisons-t" data-maisons data-warm>
   <div class="wrap">
-    <div class="sec__head"><h2 id="maisons-t" class="dc split">{esc(h['trust_title'])}</h2></div>
-    <div class="board" data-board><span class="board__leaf" aria-hidden="true"></span><span class="board__sheen" aria-hidden="true"></span><ul class="wall" data-wall>{logos}</ul></div>
+    <div class="sec__head"><h2 id="maisons-t" class="dc split">{esc(c.home()['trust_title'])}</h2></div>
+    <div class="board" data-board><ul class="wall" data-wall>{''.join(items)}</ul></div>
   </div>
 </section>"""
 
-    for f in ("book-cover-600.jpg", "book-cover-600.avif", "book-cover-1200.jpg", "book-cover-1200.avif", "cobalt-creation-book.pdf"):
-        A.file(f)
-    book = f"""<section class="sec sec--deep book3-sec" aria-labelledby="book-t" data-book3-sec>
-  <div class="wrap book3">
-    <div class="book3__cover" data-tilt><div class="book3__obj" data-book3><picture><source type="image/avif" srcset="assets/media/book-cover-600.avif 600w, assets/media/book-cover-1200.avif 1200w" sizes="(max-width: 900px) 80vw, 62vh"><img src="assets/media/book-cover-600.jpg" srcset="assets/media/book-cover-600.jpg 600w, assets/media/book-cover-1200.jpg 1200w" sizes="(max-width: 900px) 80vw, 62vh" width="600" height="600" alt="Couverture du book de Cobalt Création" loading="lazy" decoding="async"></picture><span class="book3__sheen" aria-hidden="true" data-sheen></span><span class="book3__edge" aria-hidden="true"></span></div></div>
-    <div data-settle>
-      <h2 id="book-t" class="dc split" style="margin-bottom:36px">{esc(h['book_title'])}</h2>
-      <a class="link" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf">{esc(h['book_link'])} <span aria-hidden="true">&darr;</span></a>
-      <span class="book3__meta">PDF, {c.BOOK_SIZE}</span>
-    </div>
+
+def book():
+    """The cover and three pages of the client's book, dealt from a stack as the section rises, then still."""
+    pages = []
+    for k in BOOK_PAGES:
+        im = None
+        for w in (600, 1182):
+            f = f"v3-bk-{k}-{w}"
+            if not (V3M / f"{f}.avif").exists() or not (V3M / f"{f}.jpg").exists():
+                im = im or Image.open(ROOT / "src-media/book" / f"{k}.jpg").convert("RGB")
+                r = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+                r.save(V3M / f"{f}.jpg", "JPEG", quality=84, optimize=True, progressive=True); r.save(V3M / f"{f}.avif", "AVIF", quality=64, speed=6)
+            V3_USED.update((f"{f}.jpg", f"{f}.avif"))
+        alt = "Couverture du book de Cobalt Création" if k == "hi-01" else ""
+        pages.append(f'<figure class="bk__p" data-bk-p><picture><source type="image/avif" srcset="assets/media/v3-bk-{k}-600.avif 600w, assets/media/v3-bk-{k}-1182.avif 1182w" sizes="(max-width: 767px) 44vw, 21vw">'
+                     f'<img src="assets/media/v3-bk-{k}-600.jpg" srcset="assets/media/v3-bk-{k}-600.jpg 600w, assets/media/v3-bk-{k}-1182.jpg 1182w" sizes="(max-width: 767px) 44vw, 21vw" width="1182" height="1182" alt="{alt}" loading="lazy" decoding="async"></picture></figure>')
+    A.file("cobalt-creation-book.pdf")
+    h = c.home()
+    return f"""<section class="bk" aria-labelledby="book-t" data-bk data-warm>
+  <div class="wrap">
+    <div class="bk__deal" data-bk-deal>{''.join(pages)}</div>
+    <div class="bk__t"><h2 id="book-t" class="d1 split">{esc(h['book_title'])}</h2>
+      <p><a class="link" href="assets/media/cobalt-creation-book.pdf" download="Cobalt-Creation-Book.pdf">{esc(h['book_link'])} <span aria-hidden="true">&darr;</span></a><span class="bk__meta">PDF, {c.BOOK_SIZE}</span></p></div>
   </div>
 </section>"""
 
-    groups = c.team()
+
+def crew():
     cols = []
-    for g in groups:
+    for g in c.team():
         lis = "".join('<li><span class="crew__n">' + esc(p["name"]) + '</span><span class="crew__r">' + esc(c.typo(p["role"])) + "</span></li>" for p in g["people"])
         cols.append(f'<div class="crew__g"><h3>{esc(g["name"])}</h3><ul>{lis}</ul></div>')
-    crew_cols = "".join(cols)
-    crew = f"""<section class="sec" aria-labelledby="crew-t">
+    return f"""<section class="sec crew-sec" aria-labelledby="crew-t" data-tone-l="dark" data-tone-r="dark">
   <div class="wrap">
-    <div class="sec__head"><h2 id="crew-t" class="d2 split">L’équipe</h2></div>
-    <div class="crew" data-crew>{crew_cols}</div>
-    <p class="reals__more"><a class="link" href="contact-feedback/">Nous contacter <span aria-hidden="true">&rarr;</span></a></p>
+    <div class="sec__head"><h2 id="crew-t" class="d1 split">L’équipe</h2></div>
+    <div class="crew" data-crew>{''.join(cols)}</div>
+    <p class="crew__more"><a class="link" href="contact-feedback/">Nous contacter <span aria-hidden="true">&rarr;</span></a></p>
   </div>
 </section>"""
-
-    page(slug, hero + gestes + reals + maisons + book + crew, "p-home", viewer=True)
 
 
 def build_rubric(slug):
@@ -423,49 +590,46 @@ def build_rubric(slug):
     title = f'<span class="split">{esc(h[0].capitalize())}</span>'
     if len(h) > 1:
         title += f"<em>{esc(h[1].capitalize())}</em>"
-    fig = opening(slug, b, eager=True)
     ip = c.intro(slug)
     paras = f'<p class="lightp" data-lightp>{esc(ip[0])}</p>' + "".join(f"<p>{esc(p)}</p>" for p in ip[1:])
-    cells = []
-    for i, w in enumerate(items):
-        n = i + 1
-        if slug == "ateliers-de-personnalisation" and w["gallery"] == 1:
-            # the live page shows its autoplay film beside this image
-            A.file("atelier-video-720.mp4"); A.file("atelier-video-poster.jpg")
-            cells.append(f'<figure class="rl rl--video" data-s="{len(cells) % 7}" style="--ar:1"><div class="rl__a"><video data-autoplay muted loop playsinline preload="none" poster="{b}assets/media/atelier-video-poster.jpg" aria-label="Film d’atelier : gaufrage à la main"><source src="{b}assets/media/atelier-video-720.mp4" type="video/mp4"></video><button class="cs__play" type="button">Lire le film</button></div><figcaption><span class="cap__t">Film d’atelier</span></figcaption></figure>')
-        k = len(cells) % 7
-        pic_ = A.picture(w["media"], b, "(max-width: 767px) 92vw, 50vw" if k == 0 else "(max-width: 767px) 46vw, 34vw", alt=c.work_alt(w) or f"Réalisation {n}")
-        label = c.work_alt(w) or f"Réalisation {n}"
-        cells.append(f'<figure class="rl" id="piece-{n}" data-s="{k}" style="--ar:{ratio(w["media"]):.3f}"><a class="rl__a" href="#piece-{n}" data-view=\'{esc(item_data(w, b, n))}\' aria-label="Agrandir : {esc(label)}">{pic_}</a>{caption(w)}</figure>')
+    film_cell = ""
+    if slug == "ateliers-de-personnalisation":
+        # the live page shows its autoplay film beside its gallery: here, the only footage of a hand at work, in a tall
+        # frame beside the intro (720 px file drawn at most 360 css px: never enlarged at DPR 2)
+        A.file("atelier-video-720.mp4"); A.file("atelier-video-poster.jpg")
+        film_cell = (f'<figure class="rh__film"><video data-autoplay muted loop playsinline preload="none" poster="{b}assets/media/atelier-video-poster.jpg" aria-label="Film d’atelier : gaufrage à la main">'
+                     f'<source src="{b}assets/media/atelier-video-720.mp4" type="video/mp4"></video><button class="cs__play" type="button">Lire le film</button><figcaption>Film d’atelier</figcaption></figure>')
+    cell = lambda w, n, slot: run_cell(w, n, slot, b, f"#piece-{n}", anchor=True)
+    rows = spreads([(i + 1, w) for i, w in enumerate(items)], b, cell, " data-warm")
     film = ""
     if slug == "ateliers-de-personnalisation":
         A.file("givenchy-film-1280.jpg"); A.file("givenchy-film-1280.avif")
-        film = f"""<section class="film3">
-  <div class="wrap">
+        film = f"""<div class="film3 wrap">
     <div class="film3__frame" data-film="{c.YOUTUBE_ID}" data-title="{esc(c.YOUTUBE_TITLE)}">
       <button class="film3__btn" type="button" aria-describedby="film-n"><picture><source type="image/avif" srcset="{b}assets/media/givenchy-film-1280.avif"><img src="{b}assets/media/givenchy-film-1280.jpg" width="1280" height="720" alt="" loading="lazy" decoding="async"></picture>
         <span class="film3__label"><span class="film3__icon" aria-hidden="true"></span><strong>{esc(c.YOUTUBE_TITLE)}</strong><span class="sr-only">Lire la vidéo</span></span></button>
     </div>
     <p class="note" id="film-n">La vidéo est hébergée par YouTube : elle ne se charge qu’au clic.</p>
-  </div>
-</section>"""
-    corner = OPEN[slug][3]
+  </div>"""
     nxt = NEXT[slug]
     nh = c.heading(nxt)
-    main = f"""<section class="rh rh--{corner}">
-  <figure class="rh__fig" data-rh><span class="ph" data-rh-ph>{fig}<span class="fo" aria-hidden="true"></span><span class="fo fo--top" aria-hidden="true"></span></span>
-    <figcaption class="rh__title"><div class="wrap"><h1 class="dc">{title}</h1></div></figcaption>
-  </figure>
-  <div class="wrap"><div class="rh__intro" data-settle>{paras}</div></div>
+    main = f"""<section class="rh" data-rh-wrap>
+  <figure class="rh__fig" data-rh {opening_tone(slug)}><span class="rh__ph" data-drift-hold>{opening(slug, b, eager=True)}</span></figure>
+  <div class="rh__sheet" data-sheet data-tone-l="dark" data-tone-r="dark">
+    <div class="wrap rh__in{' rh__in--film' if film_cell else ''}">
+      <h1 class="dc rh__t">{title}</h1>
+      <div class="rh__intro">{paras}</div>{film_cell}
+    </div>
+  </div>
 </section>
-<section class="sheet" aria-label="Réalisations">
-  <div class="run run--page">{''.join(cells)}</div>
+<section class="cat paper" aria-label="Réalisations" data-tone-l="light" data-tone-r="light">
+  <div class="run run--sp run--page">{rows}</div>
+  {film}
 </section>
-{film}
-<div class="nx3" data-nx>
-  <a class="next3 rh--{OPEN[nxt][3]}" href="{link(slug, nxt)}" data-next>
-    <span class="next3__media ph" aria-hidden="true" data-nx-media>{opening(nxt, b, cls="next3__img")}<span class="fo"></span><span class="fo fo--top"></span></span>
-    <span class="next3__t dc"><span class="next3__k">Rubrique suivante</span><span>{esc(nh[0].capitalize())}</span>{f"<em>{esc(nh[1].capitalize())}</em>" if len(nh) > 1 else ""}</span>
+<div class="nx3" data-nx data-warm>
+  <a class="next3" href="{link(slug, nxt)}" data-next>
+    <span class="next3__media" aria-hidden="true" {opening_tone(nxt)}>{opening(nxt, b, cls="next3__img")}</span>
+    <span class="next3__band" data-tone-l="dark" data-tone-r="dark"><span class="wrap"><span class="next3__k">Rubrique suivante</span><span class="next3__t dc"><span>{esc(nh[0].capitalize())}</span>{f"<em>{esc(nh[1].capitalize())}</em>" if len(nh) > 1 else ""}</span></span></span>
   </a>
 </div>"""
     page(slug, main, "p-rubric", viewer=True)
@@ -480,12 +644,16 @@ def build_contact():
             f'<li class="p3"><span class="p3__n">{esc(p["name"])}</span><span class="p3__r">{esc(c.typo(p["role"]))}</span><span class="p3__c"><a href="mailto:{p["email"]}">{p["email"]}</a>'
             + (f'<a href="tel:{c.tel(p["phone"])}">{esc(p["phone"])}</a>' if p["phone"] else "") + "</span></li>" for p in g["people"])
         gs.append(f'<div class="team3__g" data-settle><h3>{esc(g["name"])}</h3><ul class="team3__ppl">{ppl}</ul></div>')
-    cw = c.works("ateliers-de-personnalisation")[9]          # Guerlain, Xmas 2022, atelier retail France, gravure
-    cpic = A.picture(cw["media"], b, "(max-width: 900px) 100vw, 44vw", alt=c.work_alt(cw), cls="ctx3__img", eager=True, priority=True)
+    # an artisan engraving bottles under a loupe lamp (the live home's « Animations retail sur-mesure » image), at full
+    # light: drawn at most 1485 device px from 2954
+    name = mid("08cb192d62d2")
+    sw, sh = src_size(name)
+    cpic = pic(name, b, f"(max-width: 900px) 100vw, {cover('44vw', '110vh', sw / sh)}", widths=(800, 1280, 1920), alt="", cls="ctx3__img", eager=True, priority=True).replace(' decoding="async"', ' decoding="async"' + HOLD)
+    l, r = tone(name)
     street, city = c.ADDRESS_LINE.split(" - ")
     main = f"""<section class="ctx3" aria-labelledby="ct-t">
-  <figure class="ctx3__media">{cpic}<span class="fo fo--top" aria-hidden="true"></span><span class="fo" aria-hidden="true"></span><figcaption>{esc(" · ".join(c.work_lines(cw)))}</figcaption></figure>
-  <div class="ctx3__body">
+  <figure class="ctx3__media" data-tone-l="{l}" data-tone-r="{l}" style="background-color:{mean_colour(name)}"><span class="ctx3__ph" data-drift-hold>{cpic}</span></figure>
+  <div class="ctx3__body" data-tone-l="dark" data-tone-r="dark">
     <h1 id="ct-t" class="d1 split">Nous contacter</h1>
     <div class="ct3__grid">
       <dl class="ways" data-settle>
@@ -503,15 +671,13 @@ def build_contact():
         <div class="f3__foot"><button class="btn3" type="submit">Envoyer</button><p class="f3__note">En cliquant sur Envoyer, votre messagerie s’ouvre avec votre message prêt à partir vers {c.EMAIL}.</p></div>
       </form>
     </div>
+    <section class="team3-sec" aria-labelledby="team-t">
+      <h2 id="team-t" class="d2 split">L’équipe</h2>
+      <div class="team3">{''.join(gs)}</div>
+    </section>
   </div>
 </section>
-<section class="sec" aria-labelledby="team-t">
-  <div class="wrap">
-    <div class="sec__head"><h2 id="team-t" class="d2 split">L’équipe</h2></div>
-    <div class="team3">{''.join(gs)}</div>
-  </div>
-</section>
-<section class="map3 sec--deep" aria-labelledby="map-t" data-map="{c.MAPS_EMBED}">
+<section class="map3" aria-labelledby="map-t" data-map="{c.MAPS_EMBED}" data-tone-l="dark" data-tone-r="dark">
   <div class="wrap">
     <h2 class="kicker" id="map-t">Plan d’accès</h2>
     <p class="map3__addr"><span class="split">Agence Cobalt Création</span><br><span class="split">{esc(street)}</span><br><em class="split">{esc(city)}</em></p>
@@ -556,7 +722,7 @@ def main():
         build_rubric(s)
     build_contact()
     build_privacy()
-    for f in ("leather.jpg", "leather-soft.jpg", "leather-height.png", "goldleaf.jpg", "logo-cobalt-creme.png"):
+    for f in ("leather.jpg", "leather-soft.jpg", "leather-height.png", "goldleaf.jpg", "logo-cobalt-creme.png", "logo-cobalt.png"):
         A.file(f)
     n = A.copy()
     for f in med.glob("v3-*"):

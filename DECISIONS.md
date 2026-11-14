@@ -225,3 +225,55 @@ solutions, decisions: `reviews/v3/`) set five rules for the whole page, applied 
 - **Fixed:** the home page no longer pans sideways on phones (the logo wall's depth counted as overflow); the works'
   column parallax that played off screen is gone with the columns; the logo masks load only when the board is near.
 - Not done this pass: the menu with each rubric's photograph (kept for later).
+
+## Round 2 (2026-11-13 → 11-14): V3 « Atelier » after the owner's review
+Feedback: below the hero V3 looked cheap and broken (plates popping one way, late and blank images, a cyan haze on
+white photographs, one blue for everything, a 1.2 s curtain). Three stages under `reviews/v3/round2/` (critique,
+solutions, decisions); the judge's report is `3-decisions.md`, the gates are in `tests/`, before/after frames in `ba/`.
+- **Rules.** Everything the scroll drives is a pure function of the scroll position (no class toggle, no CSS transition,
+  no timer), so it plays backwards exactly as forwards and a fast scroll only plays it faster. Movement is translation:
+  frames that slide over each other and pictures that drift inside their frames. No photograph is graded or tinted.
+- **Palette: combo A « Encre, papier, or »** (ink `#02374F`, eggshell paper `#EAE7DC`, vanilla gold field `#D8C3A5`,
+  bronze `#6E5434`; body `#CFC6B8` and captions `#B8AE9F` on ink, `#5C5852` on paper). Ink stays the dominant register
+  (about half the home's scroll); paper only where the client's white-ground photographs are (works, book, rubric
+  catalogues), always entered and left under a full-bleed photograph so ink never ramps into paper on screen. The
+  multiply fall-off (`.fo`) is deleted: it was the cyan haze.
+- **Readiness.** Sections marked `data-warm` turn their images eager and decode them 1.5 screens ahead; a rubric's spreads
+  decode on tab hover/focus; nothing that can come on screen is `display: none`. The first screen's photograph (rubric
+  opening, contact) shows only once decoded, over a ground of its own average colour; every frame of the works and the
+  techniques has its photograph's average colour as ground, so a frame never shows a foreign colour.
+- **Hero:** unchanged (220 vh). Hand-off: the hallmark dissolves in place with the hide's top. Without JavaScript the
+  hero shows its three sentences, as with reduced motion.
+- **Techniques:** ten plates, each the client's strongest photograph of that technique under that work's own title
+  (cards on their own white, never enlarged). The plates slide up over each other (each holds still for 45 % of its
+  step), the picture drifts ±5 % inside its plate only while it slides, the index lights by position, the descriptions
+  pass through zero.
+- **Bridges:** two full-bleed photographs (the gold-leaf coasters in, « 44 » out) rise over the held stage.
+- **Works (paper):** one spread per rubric, its strongest photograph first; weak or campaign pictures are never a lead;
+  nothing the techniques already show. Pictures drift ±4 % in their frames, the second of a pair and each lead's
+  caption pass at their own rate; the frames themselves never slit, fade or scale.
+- **Maisons:** the paper eases to the gold field and back; the marks are pressed in ink and hold still, the wall drifts.
+- **Book:** the four pages are dealt from the stack while the section rises, upright and still from 20 % up.
+- **Team:** back on the ink after the « 44 » bridge (gold Bodoni group names, cream names); no motion beyond the type;
+  it hands straight to the footer's « Nous contacter » (the empty screen between them is gone).
+- **Contact:** the photograph shows once decoded; on phones the name and first name stay side by side, so the form
+  reads as one block rather than a column of lines.
+- **Rubric pages:** the opening photograph at full light (wide crop for screens, tall crop for phones), then an ink sheet
+  with the title and intro rises over it, then the catalogue's paper rises over the held sheet; the next-rubric panel
+  and footer are ink. The bar takes the ink on light grounds (measured under the logo and the links).
+- **Page changes:** the JS curtain is deleted. Cross-document View Transitions (CSS only): a 380 ms cross-fade, and the
+  next-rubric panel's photograph becomes the next page's opening. The ink is inlined in the head, so no white frame;
+  browsers without them (Firefox) navigate plainly; reduced motion: none.
+- **Viewer:** opens from its tile (FLIP, 560 ms); next/previous slide in the arrow's direction, the outgoing picture a
+  decoded copy (no empty frame), the incoming one after its file is decoded; swipe follows the finger; closing fades
+  the viewer to reveal the page underneath.
+- **Grounds, measured** (screen centre every 40 px of scroll, 1440 × 900): home ink 47 %, paper 34 %, full-bleed
+  photographs 11 %, gold 7 % (V2's home: paper 58 %). A rubric page is as light as V2's by area (création: paper 77 %);
+  it stays apart by its ink opening sheet, Bodoni/Geist and vertical spreads. Switch if needed: catalogue on ink with a
+  paper mount per white-ground photograph (not built).
+- **Gates** (`reviews/v3/round2/tests/`, results in `judge/`): at 1440/1280/1024/390 on the home, the four rubrics and
+  contact, a cold-cache wheel burst at ≥ 3,000 px/s shows 0 late, 0 blank and 0 flickering images; down/up shots at rest
+  match (max 1.71 of 255, the hero excepted: its live shimmer); 0 hazy edges; steady down/up on the home matches (mean
+  ≤ 1.93, p95 ≤ 4.12). Round 1's gates: `verify.mjs` 0 problems, `verify_static.py` 0 failures, fps median 16.7 ms with
+  no frame over 25 ms, `scrollWidth` 390 on the 7 pages, no dead screen, copy check 0 new texts, reduced motion and
+  no-JS 0 unreachable elements. Viewer and page changes: 0 empty frames.
